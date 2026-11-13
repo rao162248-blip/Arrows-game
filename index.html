@@ -1,0 +1,1485 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>Arrows</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet" />
+    <style>
+      :root{
+        --bg:#ffffff; --bg-soft:#f4f5fc; --card:#eceef9; --card-2:#e2e5f6;
+        --ink:#2f3560; --navy:#20264a; --arrow:#1d2447;
+        --muted:#8a90b8; --faint:#c3c8e4; --line:#e7e9f6;
+        --primary:#5b7cff; --primary-dark:#4767e6; --primary-soft:#d5ddff;
+        --danger:#ff4657; --good:#1fc76b; --gold:#ffb020;
+        --board:#ffffff; --gridline:#e3e6f7;
+        --shadow:0 10px 30px rgba(47,53,96,.12);
+        --nav-bg:#eceef9;
+      }
+      [data-theme="dark"]{
+        --bg:#141830; --bg-soft:#1a1e3a; --card:#232847; --card-2:#2b3054;
+        --ink:#e9ebfb; --navy:#f2f3ff; --arrow:#dfe4ff;
+        --muted:#9aa1cc; --faint:#4a5080; --line:#2c3157;
+        --primary:#6d8bff; --primary-dark:#5b7cff; --primary-soft:#333d75;
+        --board:#1b1f3d; --gridline:#2c3157;
+        --shadow:0 10px 30px rgba(0,0,0,.4);
+        --nav-bg:#1d2142;
+      }
+      *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+      html,body{height:100%;}
+      body{
+        margin:0; font-family:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;
+        background:var(--bg-soft); color:var(--ink);
+      }
+      button{font-family:inherit; cursor:pointer; border:none; background:none; color:inherit; min-height:2.75rem;}
+      button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--primary); outline-offset:2px;}
+      #stage{min-height:100dvh; display:flex; justify-content:center;}
+      #app{
+        position:relative; width:100%; max-width:480px; min-height:100dvh;
+        background:var(--bg); display:flex; flex-direction:column; overflow:hidden;
+        box-shadow:0 0 0 1px var(--line), var(--shadow);
+      }
+      @media (min-width:560px){ #app{min-height:100dvh;} }
+      main{flex:1; overflow-y:auto; padding:18px 20px 110px; scrollbar-width:thin;}
+      main.no-nav{padding-bottom:24px;}
+      .screen{display:none; animation:fade .18s ease;}
+      .screen.on{display:block;}
+      @keyframes fade{from{opacity:0}to{opacity:1}}
+      @media (prefers-reduced-motion: reduce){ .screen{animation:none} }
+
+      /* ---------- generic ---------- */
+      .pill-btn{
+        background:var(--primary); color:#fff; font-weight:900; font-size:1.05rem;
+        border-radius:999px; padding:.8rem 2.6rem; min-height:3.4rem;
+        box-shadow:0 6px 0 var(--primary-dark); transition:transform .08s, box-shadow .08s;
+      }
+      .pill-btn:active{transform:translateY(4px); box-shadow:0 2px 0 var(--primary-dark);}
+      .pill-btn.small{padding:.45rem 1.5rem; min-height:2.6rem; font-size:.95rem; box-shadow:0 4px 0 var(--primary-dark);}
+      .pill-btn.ghost{background:var(--bg); color:var(--muted); box-shadow:none; border:2px solid var(--line);}
+      .icon-btn{
+        width:52px; height:52px; min-height:52px; border-radius:50%;
+        background:var(--primary-soft); display:inline-flex; align-items:center; justify-content:center; flex:none;
+      }
+      .icon-btn svg{width:24px; height:24px; fill:var(--ink);}
+      h2.sec{color:var(--primary); font-size:1.45rem; font-weight:900; margin:1.2rem 0 .8rem;}
+      .seg{
+        display:flex; background:var(--card); border-radius:999px; padding:5px; gap:4px;
+        max-width:340px; margin:6px auto 4px;
+      }
+      .seg button{flex:1; border-radius:999px; font-weight:800; font-size:1.05rem; color:var(--ink); min-height:2.9rem;}
+      .seg button.on{background:var(--primary-soft); font-weight:900;}
+
+      /* ---------- home ---------- */
+      .streak-pill{
+        display:flex; align-items:center; gap:6px; background:var(--card);
+        border-radius:16px; padding:8px 18px; font-weight:900; font-size:1.35rem;
+        width:max-content; margin:4px auto 18px;
+      }
+      .streak-pill svg{width:26px; height:26px;}
+      .home-cards{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+      .home-card{
+        position:relative; background:var(--bg-soft); border-radius:20px; padding:16px 12px 14px;
+        text-align:center; display:flex; flex-direction:column; align-items:center; gap:2px;
+      }
+      [data-theme="dark"] .home-card{background:var(--card);}
+      .home-card h3{margin:0; font-size:1.25rem; font-weight:900;}
+      .home-card p{margin:0 0 8px; color:var(--ink); font-weight:700; font-size:.95rem;}
+      .home-card .art{height:96px; display:flex; align-items:center; justify-content:center; margin:2px 0 10px;}
+      .dot{position:absolute; top:-7px; right:-4px; width:22px; height:22px; border-radius:50%; background:var(--danger);}
+      .logo{ text-align:center; margin:9vh 0 0; }
+      .logo .word{font-size:3rem; font-weight:900; color:var(--navy); letter-spacing:-.5px; display:flex; align-items:center; justify-content:center; gap:2px;}
+      .logo .word svg{width:44px; height:44px; fill:var(--navy); margin-right:1px;}
+      .logo .lvl{color:var(--primary); font-size:1.9rem; font-weight:900; margin-top:2px;}
+      .play-wrap{display:flex; justify-content:center; margin-top:7vh;}
+      .play-wrap .pill-btn{width:min(78%,340px); font-size:1.5rem; min-height:4.3rem;}
+
+      /* ---------- bottom nav ---------- */
+      nav#tabs{
+        position:absolute; left:0; right:0; bottom:0; background:var(--nav-bg);
+        display:grid; grid-template-columns:repeat(4,1fr); padding:10px 8px calc(10px + env(safe-area-inset-bottom));
+        z-index:30;
+      }
+      nav#tabs.hide{display:none;}
+      nav#tabs button{display:flex; flex-direction:column; align-items:center; gap:3px; font-weight:800; font-size:.95rem; color:var(--ink); min-height:3.6rem; border-radius:14px; position:relative;}
+      nav#tabs button .tic{width:58px; height:40px; border-radius:999px; display:flex; align-items:center; justify-content:center; position:relative;}
+      nav#tabs button.on .tic{background:var(--primary-soft);}
+      nav#tabs svg{width:27px; height:27px; fill:var(--ink);}
+      nav#tabs .ndot{position:absolute; top:2px; right:8px; width:15px; height:15px; border-radius:50%; background:var(--danger); border:2px solid var(--nav-bg);}
+
+      /* ---------- game ---------- */
+      #screen-game{padding:0;}
+      .game-head{padding:16px 18px 4px; display:flex; align-items:flex-start; gap:10px;}
+      .game-head .mid{flex:1; text-align:center;}
+      .diff{font-size:1.35rem; font-weight:900; line-height:1.1;}
+      .hearts{display:flex; gap:5px; justify-content:center; margin-top:3px;}
+      .hearts svg{width:27px; height:27px; fill:var(--danger); transition:transform .2s;}
+      .hearts svg.lost{fill:var(--card-2);}
+      .progress{height:7px; background:var(--line); border-radius:99px; margin:12px 20px 6px; overflow:hidden;}
+      .progress i{display:block; height:100%; width:0%; background:var(--primary); border-radius:99px; transition:width .25s ease;}
+      .board-wrap{position:relative; margin:6px 10px 0;}
+      #board{width:100%; height:auto; display:block; background:var(--board); border-radius:8px; touch-action:none;}
+      #board .tap-arrow{cursor:pointer;}
+      #board .tap-arrow .shaft{fill:none; stroke:var(--arrow); stroke-width:25; stroke-linecap:round; stroke-linejoin:round;}
+      #board .tap-arrow .hit{fill:none; stroke:rgba(0,0,0,0); stroke-width:58; stroke-linecap:round; stroke-linejoin:round; pointer-events:stroke;}
+      #board .tap-arrow polygon{fill:var(--arrow);}
+      #board .tap-arrow.blocked .shaft{stroke:var(--danger);}
+      #board .tap-arrow.blocked polygon{fill:var(--danger);}
+      #board .tap-arrow.hintflash .shaft{stroke:var(--gold); animation:pulseHint .45s ease 6;}
+      #board .tap-arrow.hintflash polygon{fill:var(--gold); animation:pulseHint .45s ease 6;}
+      .hint-btn .hcount{background:#fff; color:var(--primary-dark); border-radius:999px; padding:0 .55rem; font-size:1rem; font-weight:900;}
+      #board .gridlines line{stroke:var(--gridline); stroke-width:2;}
+      @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-9px)}40%{transform:translateX(9px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}
+      .shake{animation:shake .32s ease;}
+      @keyframes pulseHint{0%,100%{opacity:1}50%{opacity:.45}}
+      .hinting{animation:pulseHint .5s ease 4;}
+      @media (prefers-reduced-motion: reduce){ .shake,.hinting{animation:none} }
+      .hint-btn{
+        position:absolute; top:14px; right:0; z-index:5;
+        background:var(--primary); color:#fff; font-weight:900; font-size:1.15rem;
+        border-radius:999px 0 0 999px; padding:.65rem 1.1rem .65rem 1.2rem; min-height:3.2rem;
+        display:flex; align-items:center; gap:8px; box-shadow:var(--shadow);
+      }
+      .hint-btn svg{width:21px; height:21px; fill:#fff;}
+      .grid-btn{
+        position:absolute; right:14px; bottom:14px; z-index:5;
+        width:62px; height:62px; min-height:62px; border-radius:50%;
+        background:var(--primary-soft); color:var(--ink); font-size:1.9rem; font-weight:900;
+        display:flex; align-items:center; justify-content:center; box-shadow:var(--shadow);
+      }
+      .game-foot{text-align:center; color:var(--muted); font-weight:700; font-size:.9rem; padding:10px 30px 0;}
+
+      /* overlays */
+      .overlay{
+        position:absolute; inset:0; background:rgba(24,28,58,.45); z-index:40;
+        display:none; align-items:center; justify-content:center; padding:24px;
+      }
+      .overlay.on{display:flex;}
+      .sheet{background:var(--bg); border-radius:26px; padding:28px 24px; width:100%; max-width:360px; text-align:center; box-shadow:var(--shadow);}
+      .sheet h2{margin:.2rem 0 .4rem; font-size:1.7rem; font-weight:900; color:var(--navy);}
+      .sheet p{margin:.3rem 0 1rem; font-weight:700; color:var(--muted);}
+      .sheet .row-btns{display:flex; flex-direction:column; gap:10px; align-items:center;}
+      .sheet .statline{display:flex; justify-content:center; gap:18px; margin:10px 0 16px; font-weight:900;}
+      .sheet .statline span small{display:block; color:var(--muted); font-weight:800; font-size:.72rem; text-transform:uppercase; letter-spacing:.5px;}
+      .sheet .statline span{font-size:1.25rem; color:var(--navy);}
+      .big-ico{font-size:0;} .big-ico svg{width:74px; height:74px;}
+
+      /* ---------- challenge ---------- */
+      .trophy-art{display:flex; justify-content:center; margin:14px 0 4px;}
+      .cup-progress{display:flex; align-items:center; gap:10px; max-width:330px; margin:16px auto 6px;}
+      .cup-progress .bar{flex:1; height:24px; background:var(--card); border-radius:99px; position:relative; overflow:hidden;}
+      .cup-progress .bar i{position:absolute; inset:0 auto 0 0; background:var(--good); border-radius:99px;}
+      .cup-progress .num{background:var(--good); color:#fff; font-weight:900; border-radius:50%; width:34px; height:34px; display:flex; align-items:center; justify-content:center; z-index:1; margin-right:-24px; border:3px solid var(--bg);}
+      .cup-progress .total{color:var(--faint); font-weight:900; font-size:1.1rem;}
+      .cal-title{text-align:center; color:var(--primary); font-size:1.8rem; font-weight:900; margin:20px 0 14px;}
+      .cal{display:grid; grid-template-columns:repeat(7,1fr); gap:9px 4px; max-width:400px; margin:0 auto;}
+      .cal .dow{text-align:center; color:var(--faint); font-weight:900; padding:4px 0;}
+      .cal .day{
+        aspect-ratio:1; border-radius:50%; display:flex; align-items:center; justify-content:center;
+        font-weight:900; font-size:1.05rem; background:var(--card); color:var(--ink); min-height:2.4rem; position:relative;
+      }
+      .cal .day.future{background:transparent; color:var(--faint);}
+      .cal .day.today{background:var(--primary); color:#fff;}
+      .cal .day.done{background:#dff7e8; color:#0d7a3f;}
+      [data-theme="dark"] .cal .day.done{background:#173d2a; color:#4ade80;}
+      .cal .day.selected{outline:3px solid var(--primary-dark); outline-offset:1px;}
+      .cal .day:disabled{cursor:default; opacity:.85;}
+      .cal-wrap .play-wrap{margin-top:30px;}
+
+      /* ---------- profile / stats ---------- */
+      .prof-card{border:2px solid var(--line); border-radius:22px; padding:22px 18px; margin-top:14px;}
+      .prof-top{display:flex; align-items:center; gap:12px;}
+      .avatar{width:66px; height:66px; border-radius:50%; background:var(--primary); display:flex; align-items:center; justify-content:center; flex:none;}
+      .avatar svg{width:40px; height:40px; fill:#fff;}
+      .name-box{flex:1; background:var(--bg-soft); border-radius:14px; display:flex; align-items:center; padding:6px 6px 6px 16px; min-height:3.4rem;}
+      [data-theme="dark"] .name-box{background:var(--card);}
+      .name-box span{font-weight:900; font-size:1.15rem; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+      .name-box input{flex:1; font:inherit; font-weight:900; font-size:1.1rem; border:none; background:transparent; color:var(--ink); min-width:0;}
+      .name-box .edit{width:44px; height:44px; min-height:44px; border-radius:50%; background:var(--primary-soft); display:flex; align-items:center; justify-content:center; flex:none;}
+      .name-box .edit svg{width:20px; height:20px; fill:var(--ink);}
+      .chips{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:16px;}
+      .chip{background:var(--bg-soft); border-radius:12px; padding:10px; text-align:center; font-weight:900; font-size:1.02rem; display:flex; align-items:center; justify-content:center; gap:7px;}
+      [data-theme="dark"] .chip{background:var(--card);}
+      .chip svg{width:20px; height:20px;}
+      .badge-slots{display:flex; justify-content:center; gap:16px; margin-top:20px;}
+      .badge-slots div{width:76px; height:76px; border:3px dashed var(--faint); border-radius:18px; display:flex; align-items:center; justify-content:center; color:var(--faint); font-size:1.8rem; font-weight:900;}
+      .award-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:18px 12px; margin-top:6px;}
+      .award{text-align:center; position:relative;}
+      .award .tile{background:var(--bg-soft); border-radius:18px; aspect-ratio:1; display:flex; align-items:center; justify-content:center; position:relative;}
+      [data-theme="dark"] .award .tile{background:var(--card);}
+      .award .tile svg{width:58%; height:58%;}
+      .award .val{position:absolute; bottom:-8px; left:50%; transform:translateX(-50%); font-weight:900; font-size:1.3rem; color:var(--navy); text-shadow:0 2px 0 var(--bg),0 0 6px var(--bg);}
+      .award h4{margin:14px 0 0; font-size:.98rem; font-weight:900;}
+      .award p{margin:0; color:var(--muted); font-weight:800; font-size:.85rem;}
+      .award.locked .tile svg{opacity:.28; filter:grayscale(1);}
+      .award.locked h4{color:var(--muted);}
+      .award .rdot{position:absolute; top:-5px; right:2px; width:19px; height:19px; border-radius:50%; background:var(--danger); z-index:2;}
+      .stat-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:20px 8px; margin-top:8px;}
+      .stat{text-align:center;}
+      .stat .tile{background:var(--bg-soft); border-radius:16px; aspect-ratio:1; display:flex; align-items:center; justify-content:center; position:relative; margin-bottom:14px;}
+      [data-theme="dark"] .stat .tile{background:var(--card);}
+      .stat .tile svg{width:56%; height:56%;}
+      .stat .val{position:absolute; bottom:-11px; left:50%; transform:translateX(-50%); background:var(--navy); color:#fff; font-weight:900; font-size:.86rem; border-radius:999px; padding:2px 10px; white-space:nowrap;}
+      [data-theme="dark"] .stat .val{background:#e9ebfb; color:#20264a;}
+      .stat p{margin:0; font-weight:900; font-size:.86rem; line-height:1.25;}
+      .stat.dim{opacity:.45;}
+
+      /* ---------- settings ---------- */
+      .set-group{background:var(--card); border-radius:20px; padding:8px 18px; margin-bottom:16px;}
+      .set-row{display:flex; align-items:center; gap:16px; padding:15px 0; font-weight:800; font-size:1.12rem; width:100%; text-align:left;}
+      .set-row + .set-row{border-top:1px solid var(--line);}
+      .set-row svg{width:27px; height:27px; fill:var(--ink); flex:none;}
+      .set-row .right{margin-left:auto; color:var(--muted); font-weight:800; display:flex; align-items:center; gap:4px;}
+      button.set-row{min-height:3.6rem;}
+      .switch{position:relative; width:60px; height:36px; min-height:36px; flex:none; margin-left:auto; padding:0;}
+      .switch .tr{position:absolute; inset:0; background:var(--faint); border-radius:99px; transition:background .15s; pointer-events:none;}
+      .switch .tr::after{content:""; position:absolute; top:4px; left:4px; width:28px; height:28px; border-radius:50%; background:#fff; transition:left .15s; box-shadow:0 1px 4px rgba(0,0,0,.25);}
+      .switch[aria-checked="true"] .tr{background:var(--navy);}
+      [data-theme="dark"] .switch[aria-checked="true"] .tr{background:var(--primary);}
+      .switch[aria-checked="true"] .tr::after{left:28px;}
+      .switch:focus-visible{outline:3px solid var(--primary); outline-offset:2px; border-radius:99px;}
+
+      /* ---------- league ---------- */
+      .league-head{display:flex; align-items:flex-start; justify-content:space-between;}
+      .league-head h2{color:var(--primary); font-size:1.8rem; font-weight:900; margin:4px 0 2px;}
+      .league-head .timer{font-weight:900; display:flex; gap:6px; align-items:center; color:var(--ink);}
+      .league-head .timer svg{width:19px; height:19px; fill:var(--ink);}
+      .shield-art{display:flex; justify-content:center; margin:8px 0 14px;}
+      .lb{border-top:1px solid var(--line);}
+      .lb-row{display:flex; align-items:center; gap:14px; padding:13px 8px; border-bottom:1px solid var(--line);}
+      .lb-row.me{background:#e9f9ef; border-radius:14px; border-bottom-color:transparent;}
+      [data-theme="dark"] .lb-row.me{background:#173d2a;}
+      .lb-rank{width:34px; text-align:center; font-weight:900; font-size:1.15rem; color:var(--good); flex:none;}
+      .lb-rank.medal{width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-size:1.1rem;}
+      .lb-flag{width:44px; height:44px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center; font-size:1.15rem; position:relative; overflow:hidden;}
+      .lb-flag .on{position:absolute; right:0; bottom:0; width:13px; height:13px; border-radius:50%; background:var(--good); border:2px solid var(--bg);}
+      .lb-name{flex:1; font-weight:800; font-size:1.08rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+      .lb-score{font-weight:900; display:flex; align-items:center; gap:5px;}
+      .lb-score svg{width:16px; height:16px; fill:var(--ink); transform:rotate(-45deg);}
+      .league-foot{padding:18px 6px 4px; display:flex; justify-content:center;}
+
+      /* toast */
+      #toast{
+        position:absolute; left:50%; bottom:120px; transform:translateX(-50%) translateY(20px);
+        background:var(--navy); color:#fff; font-weight:800; padding:12px 20px; border-radius:999px;
+        opacity:0; pointer-events:none; transition:.25s; z-index:60; max-width:88%; text-align:center; font-size:.95rem;
+        box-shadow:var(--shadow);
+      }
+      [data-theme="dark"] #toast{background:#e9ebfb; color:#20264a;}
+      #toast.on{opacity:1; transform:translateX(-50%) translateY(0);}
+      .confetti{position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index:39;}
+      .confetti i{position:absolute; top:-20px; width:0; height:0; border-left:7px solid transparent; border-right:7px solid transparent; border-bottom:12px solid var(--c); animation:fall linear forwards;}
+      @keyframes fall{to{transform:translateY(105dvh) rotate(560deg);}}
+      @media (prefers-reduced-motion: reduce){ .confetti{display:none} }
+      .stars{display:flex; gap:6px; justify-content:center; margin:8px 0 4px;}
+      .stars button{min-height:3rem; padding:2px;}
+      .stars svg{width:38px; height:38px; fill:var(--card-2);}
+      .stars button.lit svg{fill:var(--gold);}
+      .legal{text-align:left; font-weight:700; color:var(--muted); font-size:.95rem; line-height:1.5; max-height:46dvh; overflow:auto;}
+    </style>
+  </head>
+  <body>
+    <div id="stage">
+      <div id="app">
+
+        <!-- ================= HOME ================= -->
+        <main id="main-scroll">
+          <section class="screen on" id="screen-home">
+            <div class="streak-pill" aria-label="Day streak">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#c6cbe8" d="M12.7 2.3c.4 3.2-1 4.9-2.4 6.4C8.9 10.2 7.7 11.6 7.7 14a4.6 4.6 0 0 0 9.2 0c0-1.2-.5-2.2-1.1-3.2-.5 1-1.2 1.6-2 2 .3-3.4-.9-7.4-3.1-10.5zM12.3 21a2.9 2.9 0 0 1-2.9-2.9c0-1.3.8-2.2 1.5-3 .5-.6 1-1.2 1.4-2 .4.8.9 1.4 1.4 2 .7.8 1.5 1.7 1.5 3A2.9 2.9 0 0 1 12.3 21z"/></svg>
+              <span id="streak-num">0</span>
+            </div>
+            <div class="home-cards">
+              <div class="home-card">
+                <span class="dot" aria-hidden="true"></span>
+                <h3>Leagues</h3>
+                <p>Ended</p>
+                <div class="art" aria-hidden="true">
+                  <svg width="86" height="96" viewBox="0 0 86 96"><defs><linearGradient id="bronze" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e8a583"/><stop offset=".5" stop-color="#c97e5d"/><stop offset="1" stop-color="#a55f42"/></linearGradient></defs><path fill="url(#bronze)" d="M43 4 78 14v26c0 24-15 42-35 52C23 82 8 64 8 40V14Z"/><path class="shield-line" fill="none" stroke="#8a4f35" stroke-width="3" opacity=".55" d="M43 13 69 20v20c0 19-11 33-26 42C28 73 17 59 17 40V20Z"/></svg>
+                </div>
+                <button class="pill-btn small" id="btn-league">Results</button>
+              </div>
+              <div class="home-card">
+                <h3>Challenge</h3>
+                <p id="challenge-date">Today</p>
+                <div class="art" aria-hidden="true">
+                  <svg width="104" height="96" viewBox="0 0 104 96"><path fill="#ffb020" d="M20 10h64v8h10v14c0 9-7 16-16 16h-3c-2 6-7 10-13 12v6h4v14H38V66h4v-6c-6-2-11-6-13-12h-3c-9 0-16-7-16-16V18h10zM20 24h-4v8c0 5 3 9 8 10-2-3-4-7-4-11zm64 0v7c0 4-2 8-4 11 5-1 8-5 8-10v-8z"/><ellipse cx="52" cy="90" rx="26" ry="4" fill="#000" opacity=".07"/></svg>
+                </div>
+                <button class="pill-btn small" id="btn-challenge-play">Play</button>
+              </div>
+            </div>
+            <div class="logo">
+              <div class="word"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 22 21H2Z"/></svg>rrows</div>
+              <div class="lvl">Level <span id="home-level">1</span></div>
+            </div>
+            <div class="play-wrap"><button class="pill-btn" id="btn-play">Play</button></div>
+          </section>
+
+          <!-- ================= CHALLENGE ================= -->
+          <section class="screen" id="screen-challenge">
+            <div style="display:flex; align-items:center;">
+              <button class="icon-btn" data-back aria-label="Back to home"><svg viewBox="0 0 24 24"><path d="M15.5 4.5 8 12l7.5 7.5V4.5z"/></svg></button>
+              <span style="flex:1"></span>
+              <button class="icon-btn" id="cal-info" aria-label="About the daily challenge" style="background:transparent;"><svg viewBox="0 0 24 24" style="fill:var(--faint)"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 15h-2v-6h2zm0-8h-2V7h2z"/></svg></button>
+            </div>
+            <div class="trophy-art" aria-hidden="true">
+              <svg width="150" height="130" viewBox="0 0 104 96"><path fill="#dfe3f5" d="M20 10h64v8h10v14c0 9-7 16-16 16h-3c-2 6-7 10-13 12v6h4v14H38V66h4v-6c-6-2-11-6-13-12h-3c-9 0-16-7-16-16V18h10zM20 24h-4v8c0 5 3 9 8 10-2-3-4-7-4-11zm64 0v7c0 4-2 8-4 11 5-1 8-5 8-10v-8z"/></svg>
+            </div>
+            <div class="cup-progress">
+              <span class="num" id="cal-count">0</span>
+              <div class="bar"><i id="cal-bar" style="width:0%"></i></div>
+              <span class="total">30</span>
+            </div>
+            <div class="cal-title" id="cal-title">November 2026</div>
+            <div class="cal" id="cal-grid" role="grid" aria-label="November 2026 calendar"></div>
+            <div class="play-wrap" style="margin-top:34px;"><button class="pill-btn" id="btn-daily-play">Play</button></div>
+          </section>
+
+          <!-- ================= PROFILE ================= -->
+          <section class="screen" id="screen-profile">
+            <div class="seg" role="tablist" aria-label="Profile or stats">
+              <button id="tab-profile" class="on" role="tab" aria-selected="true">Profile</button>
+              <button id="tab-stats" role="tab" aria-selected="false">Stats</button>
+            </div>
+            <div id="pane-profile">
+              <div class="prof-card">
+                <div class="prof-top">
+                  <div class="avatar" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm7 6h-2.5A15 15 0 0 0 15 4.6 8 8 0 0 1 19 8zM12 4a13 13 0 0 1 1.9 4H10A13 13 0 0 1 12 4zM5 8a8 8 0 0 1 4-3.4A15 15 0 0 0 7.5 8zm-1.2 2h3A19 19 0 0 0 6.8 14H4a8 8 0 0 1-.2-4zm1.2 8a8 8 0 0 1-1-2.5h2.8A15 15 0 0 0 9 19.4 8 8 0 0 1 5 18zm7 2a13 13 0 0 1-1.9-4h3.8A13 13 0 0 1 12 20zm2.5-6H9.5a17 17 0 0 1 0-4h5a17 17 0 0 1 0 4zm1 5.4a15 15 0 0 0 1.5-3.9h2.8A8 8 0 0 1 15 19.4zm1.7-5.4a19 19 0 0 0 0-4h3a8 8 0 0 1-.2 4z"/></svg></div>
+                  <div class="name-box">
+                    <span id="player-name">Player</span>
+                    <input id="player-name-input" type="text" maxlength="16" hidden aria-label="Player name" />
+                    <button class="edit" id="btn-edit-name" aria-label="Edit player name"><svg viewBox="0 0 24 24"><path d="M3 17.2V21h3.8L17.9 9.9l-3.8-3.8L3 17.2zM20.7 7.1a1 1 0 0 0 0-1.4l-2.4-2.4a1 1 0 0 0-1.4 0l-1.8 1.8 3.8 3.8z"/></svg></button>
+                  </div>
+                </div>
+                <div class="chips">
+                  <div class="chip">Level <span id="prof-level">1</span></div>
+                  <div class="chip" id="prof-joined">Nov 13 2026</div>
+                  <div class="chip"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#c6cbe8" d="M12.7 2.3c.4 3.2-1 4.9-2.4 6.4C8.9 10.2 7.7 11.6 7.7 14a4.6 4.6 0 0 0 9.2 0c0-1.2-.5-2.2-1.1-3.2-.5 1-1.2 1.6-2 2 .3-3.4-.9-7.4-3.1-10.5z"/></svg><span id="prof-streak">0 days</span></div>
+                  <div class="chip"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#b9c0d8" d="M12 2 21 5v6c0 5.2-3.6 9.4-9 11C6.6 20.4 3 16.2 3 11V5z"/><path fill="#8f97b5" d="M12 4.2 19 6.6V11c0 4.3-2.9 7.8-7 9.4-4.1-1.6-7-5.1-7-9.4V6.6z"/></svg><span id="prof-league">Bronze</span></div>
+                </div>
+                <div class="badge-slots" aria-hidden="true"><div>+</div><div>+</div><div>+</div></div>
+              </div>
+              <h2 class="sec">Awards</h2>
+              <div class="award-grid" id="award-grid"></div>
+            </div>
+            <div id="pane-stats" hidden>
+              <h2 class="sec">Stats</h2>
+              <div class="stat-grid" id="stat-grid"></div>
+            </div>
+          </section>
+
+          <!-- ================= SETTINGS ================= -->
+          <section class="screen" id="screen-settings">
+            <div class="set-group">
+              <div class="set-row">
+                <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm7 6h-2.5A15 15 0 0 0 15 4.6 8 8 0 0 1 19 8zM12 4a13 13 0 0 1 1.9 4H10A13 13 0 0 1 12 4zM5 8a8 8 0 0 1 4-3.4A15 15 0 0 0 7.5 8zm-1.2 2h3A19 19 0 0 0 6.8 14H4a8 8 0 0 1-.2-4zm1.2 8a8 8 0 0 1-1-2.5h2.8A15 15 0 0 0 9 19.4 8 8 0 0 1 5 18zm7 2a13 13 0 0 1-1.9-4h3.8A13 13 0 0 1 12 20zm2.5-6H9.5a17 17 0 0 1 0-4h5a17 17 0 0 1 0 4zm1 5.4a15 15 0 0 0 1.5-3.9h2.8A8 8 0 0 1 15 19.4zm1.7-5.4a19 19 0 0 0 0-4h3a8 8 0 0 1-.2 4z"/></svg>
+                <span>Language</span>
+                <span class="right">English <svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:var(--muted)"><path d="M9 5l7 7-7 7V5z"/></svg></span>
+              </div>
+              <div class="set-row">
+                <svg viewBox="0 0 24 24"><path d="M2 10c1.7 0 1.7 2 3.4 2S7 10 8.7 10 10.4 12 12 12s1.7-2 3.4-2 1.6 2 3.3 2S20.4 10 22 10V7.5c-1.6 0-1.6 2-3.3 2S17.1 7.5 15.4 7.5 13.7 9.5 12 9.5 10.4 7.5 8.7 7.5 7.1 9.5 5.4 9.5 3.7 7.5 2 7.5zm0 7c1.7 0 1.7 2 3.4 2S7 17 8.7 17s1.7 2 3.3 2 1.7-2 3.4-2 1.6 2 3.3 2 1.7-2 3.3-2v-2.5c-1.6 0-1.6 2-3.3 2s-1.6-2-3.3-2-1.7 2-3.4 2-1.6-2-3.3-2S7.1 16.5 5.4 16.5 3.7 14.5 2 14.5z"/></svg>
+                <span>Vibrations</span>
+                <button class="switch" role="switch" aria-checked="true" aria-label="Vibrations" data-set="vib"><span class="tr"></span></button>
+              </div>
+              <div class="set-row">
+                <svg viewBox="0 0 24 24"><path d="M4 9v6h4l6 5V4L8 9zm13.5 3a3.5 3.5 0 0 0-2-3.15v6.3a3.5 3.5 0 0 0 2-3.15zm-2-7.6v2.1a5.5 5.5 0 0 1 0 11v2.1a7.5 7.5 0 0 0 0-15.2z"/></svg>
+                <span>Sounds</span>
+                <button class="switch" role="switch" aria-checked="true" aria-label="Sounds" data-set="sound"><span class="tr"></span></button>
+              </div>
+              <div class="set-row">
+                <svg viewBox="0 0 24 24"><path d="M20.6 14.5A8.5 8.5 0 0 1 9.5 3.4a.6.6 0 0 0-.8-.8 10.5 10.5 0 1 0 12.7 12.7.6.6 0 0 0-.8-.8zM17 4l.6 1.7L19.3 6.3l-1.7.6L17 8.6l-.6-1.7-1.7-.6 1.7-.6z"/></svg>
+                <span>Dark mode</span>
+                <button class="switch" role="switch" aria-checked="false" aria-label="Dark mode" data-set="dark"><span class="tr"></span></button>
+              </div>
+            </div>
+            <div class="set-group">
+              <div class="set-row">
+                <svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/></svg>
+                <span>Account Connection</span>
+                <button class="switch" role="switch" aria-checked="false" aria-label="Account Connection" data-set="account"><span class="tr"></span></button>
+              </div>
+            </div>
+            <div class="set-group">
+              <div class="set-row">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><rect x="3.6" y="10.6" width="16.8" height="2.9" rx="1.4" transform="rotate(-45 12 12)" style="fill:var(--card)"/></svg>
+                <span>Remove Ads</span>
+                <button class="switch" role="switch" aria-checked="false" aria-label="Remove Ads" data-set="ads"><span class="tr"></span></button>
+              </div>
+              <button class="set-row" id="set-restore">
+                <svg viewBox="0 0 24 24"><path d="M12 5V1.8L6.8 6 12 10.2V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg>
+                <span>Restore purchases</span>
+              </button>
+            </div>
+            <div class="set-group">
+              <button class="set-row" id="set-rate">
+                <svg viewBox="0 0 24 24"><path d="m12 2 3 6.6 7 .8-5.2 4.8 1.4 7L12 17.7 5.8 21.2l1.4-7L2 9.4l7-.8z"/></svg>
+                <span>Rate us</span>
+              </button>
+              <a class="set-row" href="mailto:hello@example.com?subject=Arrows" style="text-decoration:none; color:inherit;">
+                <svg viewBox="0 0 24 24"><path d="M3 17.2V21h3.8L17.9 9.9l-3.8-3.8L3 17.2zM20.7 7.1a1 1 0 0 0 0-1.4l-2.4-2.4a1 1 0 0 0-1.4 0l-1.8 1.8 3.8 3.8z"/></svg>
+                <span>Write us</span>
+              </a>
+            </div>
+            <div class="set-group">
+              <button class="set-row" data-legal="privacy">
+                <svg viewBox="0 0 24 24"><path d="M6 2h9l5 5v15H6zm8 0v6h6M9 13h6v2H9zm0 4h6v2H9z"/></svg>
+                <span>Privacy</span>
+              </button>
+              <button class="set-row" data-legal="terms">
+                <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 15h-2v-6h2zm0-8h-2V7h2z"/></svg>
+                <span>Terms of Service</span>
+              </button>
+              <button class="set-row" data-legal="licenses">
+                <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 15h-2v-6h2zm0-8h-2V7h2z"/></svg>
+                <span>Open Source Licenses</span>
+              </button>
+            </div>
+          </section>
+
+          <!-- ================= LEAGUE ================= -->
+          <section class="screen" id="screen-league">
+            <div class="league-head">
+              <div>
+                <h2 id="league-name">Bronze League</h2>
+                <div class="timer" id="league-sub"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 5h-2v6l5 3 1-1.7-4-2.3z"/></svg><span>Results</span></div>
+              </div>
+              <button class="icon-btn" id="league-info" aria-label="About leagues" style="background:transparent;"><svg viewBox="0 0 24 24" style="fill:var(--faint)"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 15h-2v-6h2zm0-8h-2V7h2z"/></svg></button>
+            </div>
+            <div class="shield-art" aria-hidden="true">
+              <svg width="170" height="185" viewBox="0 0 86 96"><defs><linearGradient id="bronze2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#eec39f"/><stop offset=".5" stop-color="#cd8663"/><stop offset="1" stop-color="#a55f42"/></linearGradient></defs><path fill="url(#bronze2)" d="M43 4 78 14v26c0 24-15 42-35 52C23 82 8 64 8 40V14Z"/><path class="shield-line" fill="none" stroke="#8a4f35" stroke-width="3" opacity=".5" d="M43 13 69 20v20c0 19-11 33-26 42C28 73 17 59 17 40V20Z"/><ellipse cx="43" cy="97" rx="26" ry="4" fill="#000" opacity=".06"/></svg>
+            </div>
+            <div class="lb" id="lb-list"></div>
+            <div class="league-foot"><button class="pill-btn ghost" id="league-close" style="width:70%;">Close</button></div>
+          </section>
+
+          <!-- ================= GAME ================= -->
+          <section class="screen" id="screen-game">
+            <div class="game-head">
+              <button class="icon-btn" id="game-back" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M15.5 4.5 8 12l7.5 7.5V4.5z"/></svg></button>
+              <button class="icon-btn" id="game-restart" aria-label="Restart level"><svg viewBox="0 0 24 24"><path d="M12 5V1.8L6.8 6 12 10.2V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg></button>
+              <div class="mid">
+                <div class="diff" id="game-diff">Easy</div>
+                <div class="hearts" id="game-hearts" aria-label="Hearts"></div>
+              </div>
+              <span style="width:52px; flex:none;"></span><span style="width:10px; flex:none;"></span>
+            </div>
+            <div class="progress"><i id="game-progress"></i></div>
+            <div class="board-wrap">
+              <svg id="board" role="application" aria-label="Arrow puzzle board"></svg>
+              <button class="hint-btn" id="btn-hint"><svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.4 1 2.3h6c0-.9.4-1.8 1-2.3A7 7 0 0 0 12 2zM9 18h6v1a3 3 0 0 1-6 0zm1 4h4a2 2 0 0 1-4 0z" transform="translate(0,-1)"/></svg>Hint <span class="hcount" id="hint-count">3</span></button>
+              <button class="grid-btn" id="btn-grid" aria-label="Toggle grid" aria-pressed="false">#</button>
+            </div>
+            <p class="game-foot" id="game-tip">Tap an arrow and it slides off the board — but only if the path ahead of it is clear. A blocked arrow costs a heart. Clear them all to win.</p>
+          </section>
+        </main>
+
+        <!-- bottom nav -->
+        <nav id="tabs" aria-label="Main">
+          <button data-tab="home" class="on"><span class="tic"><svg viewBox="0 0 24 24"><path d="M12 3 2 12h3v9h6v-6h2v6h6v-9h3z"/></svg></span>Home</button>
+          <button data-tab="challenge"><span class="tic"><svg viewBox="0 0 24 24"><path d="M7 2v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2zm-2 8h14v10H5zm3 2v2h2v-2zm5 0v2h2v-2zm-5 4v2h2v-2zm5 0v2h2v-2z"/></svg><span class="ndot"></span></span>Challenge</button>
+          <button data-tab="profile"><span class="tic"><svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/></svg><span class="ndot"></span></span>Profile</button>
+          <button data-tab="settings"><span class="tic"><svg viewBox="0 0 24 24"><path d="M19.4 13a7.5 7.5 0 0 0 0-2l2-1.5-2-3.4-2.3 1a7.6 7.6 0 0 0-1.7-1L14.9 3h-4L10.4 6.1a7.6 7.6 0 0 0-1.7 1l-2.3-1-2 3.4L6.4 11a7.5 7.5 0 0 0 0 2l-2 1.5 2 3.4 2.3-1a7.6 7.6 0 0 0 1.7 1l.5 3.1h4l.5-3.1a7.6 7.6 0 0 0 1.7-1l2.3 1 2-3.4zM12.9 15.5A3.5 3.5 0 1 1 16.4 12a3.5 3.5 0 0 1-3.5 3.5z" transform="translate(-.7 0) scale(.96)"/></svg></span>Settings</button>
+        </nav>
+
+        <!-- win / game over overlay -->
+        <div class="overlay" id="overlay">
+          <div class="confetti" id="confetti"></div>
+          <div class="sheet">
+            <div class="big-ico" id="ov-ico"></div>
+            <h2 id="ov-title">Excellent!</h2>
+            <p id="ov-sub"></p>
+            <div class="statline" id="ov-stats"></div>
+            <div class="row-btns">
+              <button class="pill-btn" id="ov-primary" style="width:80%;">Next</button>
+              <button class="pill-btn ghost" id="ov-secondary" style="width:80%;">Home</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- info / legal / rate overlay -->
+        <div class="overlay" id="overlay2">
+          <div class="sheet">
+            <h2 id="ov2-title">Info</h2>
+            <div id="ov2-body"></div>
+            <div class="row-btns" style="margin-top:16px;">
+              <button class="pill-btn" id="ov2-close" style="width:70%;">Close</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="toast" role="status"></div>
+      </div>
+    </div>
+
+    <script>
+    "use strict";
+    /* ============================================================
+       Arrows — a tap-to-clear puzzle. The board is covered in
+       winding arrows. Tap one and it slides off the board in the
+       direction its head points — but only if the path ahead of
+       its head is clear. If another arrow blocks it, the tapped
+       arrow shakes red and you lose one of your 3 hearts.
+       Clear every arrow to win the level.
+       ============================================================ */
+    const $ = (s, r) => (r || document).querySelector(s);
+    const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+
+    /* ---------- seeded rng ---------- */
+    function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+    function seedFromString(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
+
+    /* ---------- app state (this session) ---------- */
+    const S = {
+      screen:"home",
+      level:1,
+      playerName:"Player" + (10000 + Math.floor(Math.random()*89999)),
+      dayStreak:0,
+      leaguePoints:0,
+      stats:{ totalWins:0, perfectWins:0, flawlessWins:0, nightmareWins:0,
+              challengeWins:0, challengeTrophies:0, winStreak:0, bestWinStreak:0,
+              winsToday:0, arrowsCollected:0 },
+      dailyDone:{},
+      selectedDay:13,
+      settings:{ vib:true, sound:true, dark:false, account:false, ads:false },
+    };
+    const TODAY = 13;               // Friday, November 13, 2026
+    const DAYS_IN_MONTH = 30;
+
+    /* ---------- saved progress (localStorage) ---------- */
+    const SAVE_KEY = "arrows-save-v1";
+    function saveGame(){
+      try{
+        localStorage.setItem(SAVE_KEY, JSON.stringify({
+          level:S.level, playerName:S.playerName, dayStreak:S.dayStreak,
+          leaguePoints:S.leaguePoints,
+          stats:S.stats, dailyDone:S.dailyDone, selectedDay:S.selectedDay,
+          settings:S.settings,
+        }));
+      }catch(e){}
+    }
+    function loadGame(){
+      try{
+        const d = JSON.parse(localStorage.getItem(SAVE_KEY) || "null");
+        if(!d) return;
+        if(Number.isFinite(d.level) && d.level >= 1) S.level = Math.floor(d.level);
+        if(typeof d.playerName === "string" && d.playerName) S.playerName = d.playerName;
+        if(Number.isFinite(d.dayStreak) && d.dayStreak >= 0) S.dayStreak = Math.floor(d.dayStreak);
+        if(d.stats && typeof d.stats === "object") Object.keys(S.stats).forEach(k => { if(Number.isFinite(d.stats[k])) S.stats[k] = d.stats[k]; });
+        if(Number.isFinite(d.leaguePoints) && d.leaguePoints >= 0) S.leaguePoints = Math.floor(d.leaguePoints);
+        else S.leaguePoints = S.stats.arrowsCollected || 0; /* older saves: league score was the arrows total */
+        if(d.dailyDone && typeof d.dailyDone === "object") S.dailyDone = d.dailyDone;
+        if(Number.isFinite(d.selectedDay)) S.selectedDay = Math.min(DAYS_IN_MONTH, Math.max(1, Math.floor(d.selectedDay)));
+        if(d.settings && typeof d.settings === "object") Object.keys(S.settings).forEach(k => { if(typeof d.settings[k] === "boolean") S.settings[k] = d.settings[k]; });
+      }catch(e){}
+    }
+    loadGame();
+
+    /* ---------- sound (WebAudio, no files) ---------- */
+    let AC = null;
+    function tone(freqA, freqB, dur, type, vol){
+      if(!S.settings.sound) return;
+      try{
+        AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+        if(AC.state === "suspended") AC.resume();
+        const o = AC.createOscillator(), g = AC.createGain(), t = AC.currentTime;
+        o.type = type || "sine";
+        o.frequency.setValueAtTime(freqA, t);
+        o.frequency.exponentialRampToValueAtTime(Math.max(freqB,1), t + dur);
+        g.gain.setValueAtTime(vol || .12, t);
+        g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+        o.connect(g); g.connect(AC.destination); o.start(t); o.stop(t + dur + .02);
+      }catch(e){}
+    }
+    const sndSlide = () => tone(280, 920, .22, "triangle", .10);
+    const sndError = () => tone(160, 90, .18, "square", .07);
+    const sndClick = () => tone(600, 700, .06, "sine", .06);
+    const sndWin   = () => { [523,659,784,1047].forEach((f,i)=> setTimeout(()=>tone(f,f,.22,"triangle",.11), i*95)); };
+    function buzz(){ if(S.settings.vib && navigator.vibrate) navigator.vibrate(70); }
+
+    /* ---------- toast ---------- */
+    let toastT = null;
+    function toast(msg){
+      const el = $("#toast"); el.textContent = msg; el.classList.add("on");
+      clearTimeout(toastT); toastT = setTimeout(()=> el.classList.remove("on"), 2300);
+    }
+
+    /* ============================================================
+       BOARD GENERATION — tap-to-clear arrows.
+       Each arrow is a short winding path of cells whose head
+       points in its last step's direction. Arrows are placed one
+       at a time, and a new arrow is only accepted if the ray from
+       its head to the edge of the board is clear of every arrow
+       placed before it (and of its own body). Removing the arrows
+       in reverse placement order therefore always works, so every
+       board is solvable — but arrows placed later can sit in an
+       earlier arrow's way out, which is what makes the order you
+       tap them in matter.
+       Difficulty (opts, set by levelConfig) ramps with the level:
+       longer arrows, more turns, and a growing chance that a new
+       arrow deliberately starts inside an earlier arrow's way
+       out, chaining arrows into deeper blocking puzzles.
+       ============================================================ */
+    const key = (x,y) => x + "," + y;
+    const DIRS4 = [ {x:0,y:-1}, {x:0,y:1}, {x:-1,y:0}, {x:1,y:0} ];
+
+    function placeArrow(W, H, occupied, rng, opts, placed){
+      opts = opts || {};
+      const minLen = opts.minLen || 3;
+      const maxLen = opts.maxLen || 5;
+      const minTurns = opts.minTurns || 0;
+      const straightP = opts.straightP == null ? .5 : opts.straightP;
+      const blockBias = opts.blockBias || 0;
+      /* cells sitting in an already-placed arrow's way out:
+         starting a new arrow on one blocks that earlier arrow */
+      let rayCells = null;
+      if(blockBias > 0 && placed && placed.length && rng() < blockBias){
+        rayCells = [];
+        placed.forEach(p => {
+          const ph = p.cells[p.cells.length-1];
+          let cx = ph.x + p.dir.x, cy = ph.y + p.dir.y;
+          while(cx >= 0 && cx < W && cy >= 0 && cy < H){
+            if(!occupied.has(key(cx,cy))) rayCells.push({ x:cx, y:cy });
+            cx += p.dir.x; cy += p.dir.y;
+          }
+        });
+        if(!rayCells.length) rayCells = null;
+      }
+      for(let attempt=0; attempt<160; attempt++){
+        let sx, sy;
+        if(rayCells){
+          const c = rayCells[Math.floor(rng()*rayCells.length)];
+          sx = c.x; sy = c.y;
+        } else {
+          sx = Math.floor(rng()*W); sy = Math.floor(rng()*H);
+        }
+        if(occupied.has(key(sx,sy))) continue;
+        const targetLen = minLen + Math.floor(rng()*(maxLen - minLen + 1));
+        const cells = [{ x:sx, y:sy }];
+        const inPath = new Set([key(sx,sy)]);
+        let dir = DIRS4[Math.floor(rng()*4)];
+        let turns = 0;
+        while(cells.length < targetLen){
+          const head = cells[cells.length-1];
+          const opts2 = DIRS4.filter(d => {
+            const nx = head.x + d.x, ny = head.y + d.y;
+            return nx >= 0 && nx < W && ny >= 0 && ny < H && !inPath.has(key(nx,ny)) && !occupied.has(key(nx,ny));
+          });
+          if(!opts2.length) break;
+          let nd;
+          const straight = opts2.find(d => d.x === dir.x && d.y === dir.y);
+          if(cells.length > 1 && straight && rng() < straightP) nd = straight;
+          else nd = opts2[Math.floor(rng()*opts2.length)];
+          if(cells.length > 1 && (nd.x !== dir.x || nd.y !== dir.y)) turns++;
+          dir = nd;
+          const nc = { x: head.x + nd.x, y: head.y + nd.y };
+          cells.push(nc); inPath.add(key(nc.x, nc.y));
+        }
+        if(cells.length < 3) continue;
+        if(turns < minTurns && attempt < 110) continue;   /* higher levels demand winding paths */
+        if(turns === 0 && rng() < .65) continue;     /* prefer winding arrows */
+        /* the way out: the ray ahead of the head must be clear of
+           the arrows already placed and of this arrow's own body */
+        const head = cells[cells.length-1];
+        let blocked = false;
+        let cx = head.x + dir.x, cy = head.y + dir.y;
+        while(cx >= 0 && cx < W && cy >= 0 && cy < H){
+          if(occupied.has(key(cx,cy)) || inPath.has(key(cx,cy))){ blocked = true; break; }
+          cx += dir.x; cy += dir.y;
+        }
+        if(blocked) continue;
+        return { cells, dir, cleared:false, id:-1 };
+      }
+      return null;
+    }
+    function genBoard(W, H, count, rng, opts){
+      for(let t=0; t<50; t++){
+        const occupied = new Set();
+        const arrows = [];
+        for(let i=0;i<count;i++){
+          const a = placeArrow(W, H, occupied, rng, opts, arrows);
+          if(a){ arrows.push(a); a.cells.forEach(c => occupied.add(key(c.x, c.y))); }
+        }
+        if(arrows.length >= Math.min(count, Math.max(3, count - 2))) return arrows;
+      }
+      return null;
+    }
+    /* is another remaining arrow sitting in this arrow's way out? */
+    function rayBlocked(a){
+      const head = a.cells[a.cells.length-1];
+      let cx = head.x + a.dir.x, cy = head.y + a.dir.y;
+      while(cx >= 0 && cx < G.cfg.W && cy >= 0 && cy < G.cfg.H){
+        if(G.occupied.has(key(cx, cy))) return true;
+        cx += a.dir.x; cy += a.dir.y;
+      }
+      return false;
+    }
+
+    const TIERS = [
+      { name:"Easy",       color:"#1db866" },
+      { name:"Medium",     color:"#5b7cff" },
+      { name:"Hard",       color:"#ff8a00" },
+      { name:"Super Hard", color:"#e93fd8" },
+      { name:"Nightmare",  color:"#8b3dff" },
+    ];
+    function levelConfig(n){
+      const step = Math.floor((n-1)/2);
+      const tier = Math.min(4, step);
+      const s = n - 1;
+      /* the board keeps growing long after the tier name tops
+         out: wider, taller, and holding more arrows */
+      const W = Math.min(10, 6 + Math.floor(s/3));
+      const H = Math.min(16, 8 + Math.floor(s/2));
+      /* arrows get longer and windier as levels rise */
+      const gen = {
+        minLen: s >= 14 ? 4 : 3,
+        maxLen: Math.min(8, 5 + Math.floor(s/7)),
+        minTurns: s >= 18 ? 2 : (s >= 7 ? 1 : 0),
+        straightP: Math.max(.2, .5 - s*.011),
+        blockBias: Math.min(.45, s*.022),
+      };
+      /* arrow count grows with the level, capped only by how
+         much of the board the arrows can cover and still fit */
+      const avgLen = (gen.minLen + gen.maxLen) / 2;
+      const fit = Math.floor(.64 * W * H / avgLen);
+      const count = Math.max(6, Math.min(26, 6 + Math.round(s*.85), fit));
+      return { W, H, tier, count, gen };
+    }
+    function dailyConfig(day){
+      const rng = mulberry32(seedFromString("arrows-daily-2026-11-" + day));
+      const tier = day % 5 === 0 ? 4 : 2 + (day % 3 === 0 ? 1 : 0);
+      return { W: 6 + tier, H: 8 + tier, tier, count: 7 + tier * 2, rng };
+    }
+
+
+    /* ============================================================
+       GAME
+       ============================================================ */
+    const G = {
+      active:false, mode:"level", day:0, cfg:null, arrows:[], occupied:new Set(),
+      hearts:3, mistakes:0, hintsLeft:3, hintsUsed:0,
+      collected:0, totalArrows:0, animating:false,
+      startedAt:0, showGrid:false, gridEl:null, arrowEls:null,
+    };
+    const CELL = 100, MARGIN = 34;
+    const SLITHER_LAG = 130;  /* how far the head pulls ahead of each segment behind it — big, so the body stretches out long like a snake as it leaves */
+    const board = $("#board");
+    const NS = "http://www.w3.org/2000/svg";
+
+    function startGame(mode, day){
+      G.mode = mode; G.day = day || 0;
+      const cfg = mode === "daily" ? dailyConfig(day) : levelConfig(S.level);
+      G.cfg = cfg;
+      const rng = cfg.rng || Math.random;
+      let arrows = genBoard(cfg.W, cfg.H, cfg.count, rng, cfg.gen);
+      if(!arrows) arrows = genBoard(cfg.W, cfg.H, Math.max(4, cfg.count - 4), rng, cfg.gen) || [];
+      G.arrows = arrows;
+      G.occupied = new Set();
+      arrows.forEach(a => a.cells.forEach(c => G.occupied.add(key(c.x, c.y))));
+      G.totalArrows = arrows.length;
+      G.hearts = 3; G.mistakes = 0; G.hintsLeft = 3; G.hintsUsed = 0; G.collected = 0;
+      G.animating = false; G.active = true; G.startedAt = Date.now();
+      renderGameHead(); buildBoard(); updateProgress(); updateHintBtn();
+      showScreen("game");
+      $("#game-tip").textContent = mode === "daily"
+        ? "Daily Challenge — November " + day + ". Tap an arrow to slide it off the board — if another arrow blocks its path, it costs a heart."
+        : "Tap an arrow and it slides off the board — but only if the path ahead of it is clear. A blocked arrow shakes red and costs a heart. Clear them all to win.";
+    }
+    function renderGameHead(){
+      const t = TIERS[G.cfg.tier];
+      const dEl = $("#game-diff");
+      dEl.textContent = G.mode === "daily" ? ("Challenge · " + t.name) : t.name;
+      dEl.style.color = t.color;
+      const h = $("#game-hearts"); h.innerHTML = "";
+      for(let i=0;i<3;i++){
+        const s = document.createElementNS(NS,"svg");
+        s.setAttribute("viewBox","0 0 24 24");
+        if(i >= G.hearts) s.setAttribute("class","lost");
+        s.innerHTML = '<path d="M12 21C7 16.5 3 13.2 3 9.3 3 6.4 5.2 4.5 7.7 4.5c1.7 0 3.3.9 4.3 2.4 1-1.5 2.6-2.4 4.3-2.4 2.5 0 4.7 1.9 4.7 4.8 0 3.9-4 7.2-9 11.7z"/>';
+        h.appendChild(s);
+      }
+    }
+    function updateProgress(){
+      $("#game-progress").style.width = (G.totalArrows ? (G.collected/G.totalArrows*100) : 0) + "%";
+    }
+    function updateHintBtn(){
+      const el = $("#hint-count");
+      if(el) el.textContent = G.hintsLeft;
+    }
+    function buildBoard(){
+      const { W, H } = G.cfg;
+      board.setAttribute("viewBox", (-MARGIN) + " " + (-MARGIN) + " " + (W*CELL + MARGIN*2) + " " + (H*CELL + MARGIN*2));
+      board.innerHTML = "";
+      const grid = document.createElementNS(NS,"g");
+      grid.setAttribute("class","gridlines");
+      grid.style.display = G.showGrid ? "" : "none";
+      for(let x=1;x<W;x++){ const l=document.createElementNS(NS,"line"); l.setAttribute("x1",x*CELL); l.setAttribute("y1",0); l.setAttribute("x2",x*CELL); l.setAttribute("y2",H*CELL); grid.appendChild(l); }
+      for(let y=1;y<H;y++){ const l=document.createElementNS(NS,"line"); l.setAttribute("x1",0); l.setAttribute("y1",y*CELL); l.setAttribute("x2",W*CELL); l.setAttribute("y2",y*CELL); grid.appendChild(l); }
+      board.appendChild(grid);
+      G.gridEl = grid;
+      /* winding arrows — tap one to slide it off the board */
+      G.arrowEls = new Map();
+      G.arrows.forEach((a, i) => {
+        a.id = i;
+        const g = document.createElementNS(NS,"g");
+        g.setAttribute("class","tap-arrow");
+        const pts = a.cells.map(c => (c.x*CELL + CELL/2) + "," + (c.y*CELL + CELL/2)).join(" ");
+        const hit = document.createElementNS(NS,"polyline");
+        hit.setAttribute("points", pts); hit.setAttribute("class","hit");
+        const shaft = document.createElementNS(NS,"polyline");
+        shaft.setAttribute("points", pts); shaft.setAttribute("class","shaft");
+        const hc = a.cells[a.cells.length-1];
+        const hx = hc.x*CELL + CELL/2, hy = hc.y*CELL + CELL/2;
+        const ux = a.dir.x, uy = a.dir.y;
+        const tip = { x: hx + ux*46, y: hy + uy*46 };
+        const bx = hx + ux*4, by = hy + uy*4;
+        const poly = document.createElementNS(NS,"polygon");
+        poly.setAttribute("points",
+          tip.x + "," + tip.y + " " +
+          (bx + uy*23) + "," + (by + ux*23) + " " +
+          (bx - uy*23) + "," + (by - ux*23));
+        g.appendChild(hit); g.appendChild(shaft); g.appendChild(poly);
+        g.addEventListener("click", () => tapArrow(a));
+        board.appendChild(g);
+        G.arrowEls.set(i, g);
+      });
+    }
+    /* Slither-out: the arrow leaves like a snake, not a rigid
+       piece. The head sets off first; every segment behind it
+       follows the same journey a beat later (one lag step per
+       cell), so the tail trails round the bends and is the last
+       part to leave the board.
+       The journey itself is a smooth curve — the arrow's path
+       with every corner rounded by a circular fillet, then out
+       along its exit ray, measured by arc length — so the body
+       flows around each bend at a steady turn rate instead of
+       kinking at it; every segment eases into motion
+       (softFollow) and the head glides on a smootherstep curve,
+       so nothing starts, stops or turns with a jerk. */
+    function buildJourney(a){
+      const pts = a.cells.map(c => ({ x: c.x*CELL + CELL/2, y: c.y*CELL + CELL/2 }));
+      const n = pts.length;
+      const headPt = pts[n-1];
+      /* how far the head must travel along its ray for it to be
+         fully past the board edge (plus a little for its tip) */
+      let headExit;
+      if(a.dir.x > 0) headExit = G.cfg.W * CELL - headPt.x + 56;
+      else if(a.dir.x < 0) headExit = headPt.x + 56;
+      else if(a.dir.y > 0) headExit = G.cfg.H * CELL - headPt.y + 56;
+      else headExit = headPt.y + 56;
+      const wp = pts.slice();
+      /* the exit ray runs long enough for the head to cover the
+         whole journey (its own path length + exit + all the lag)
+         before the tail finishes */
+      const exitLen = (n - 1) * CELL + headExit + (n - 1) * SLITHER_LAG + CELL * 2;
+      const exitSteps = Math.ceil(exitLen / CELL);
+      for(let i=1;i<=exitSteps;i++) wp.push({ x: headPt.x + a.dir.x*CELL*i, y: headPt.y + a.dir.y*CELL*i });
+      /* fillet radius: as round as the shortest path segment
+         allows (two corners can share one segment) */
+      let R = 46;
+      for(let i=1;i<wp.length;i++)
+        R = Math.min(R, Math.hypot(wp[i].x - wp[i-1].x, wp[i].y - wp[i-1].y) * .46);
+      const els = [];        /* the journey as line / arc pieces */
+      const restAll = [0];   /* arc position of each waypoint */
+      let cur = wp[0], total = 0;
+      function pushLine(to){
+        const len = Math.hypot(to.x - cur.x, to.y - cur.y);
+        if(len > 1e-6){ els.push({ line:true, from:cur, to, len, start: total }); total += len; }
+        cur = to;
+      }
+      for(let i=1;i<wp.length-1;i++){
+        const P = wp[i];
+        const ux = P.x - wp[i-1].x, uy = P.y - wp[i-1].y;
+        const ul = Math.hypot(ux, uy), u = { x: ux/ul, y: uy/ul };
+        const vx = wp[i+1].x - P.x, vy = wp[i+1].y - P.y;
+        const vl = Math.hypot(vx, vy), v = { x: vx/vl, y: vy/vl };
+        if(u.x === v.x && u.y === v.y){          /* straight through */
+          restAll.push(total + Math.hypot(P.x - cur.x, P.y - cur.y));
+          pushLine(P);
+          continue;
+        }
+        const dot = Math.max(-1, Math.min(1, u.x*v.x + u.y*v.y));
+        const theta = Math.acos(dot);
+        const trim = R * Math.tan(theta/2);
+        const A = { x: P.x - u.x*trim, y: P.y - u.y*trim };
+        const B = { x: P.x + v.x*trim, y: P.y + v.y*trim };
+        /* fillet centre: from A, one radius along the normal of
+           u that points to the inside of the turn */
+        let nx = -u.y, ny = u.x;
+        if(nx*v.x + ny*v.y < 0){ nx = -nx; ny = -ny; }
+        const C = { x: A.x + nx*R, y: A.y + ny*R };
+        pushLine(A);
+        const arcLen = R * theta;
+        els.push({ line:false, C, R,
+                   a0: Math.atan2(A.y - C.y, A.x - C.x),
+                   sweep: (u.x*v.y - u.y*v.x) >= 0 ? theta : -theta,
+                   len: arcLen, start: total });
+        total += arcLen;
+        restAll.push(total - arcLen/2);          /* corner anchor: mid-arc */
+        cur = B;
+      }
+      pushLine(wp[wp.length-1]);
+      const rest = restAll.slice(0, n);
+      return { els, total, rest, headExit, pathLen: rest[n-1] - rest[0] };
+    }
+    /* point at arc distance u along the journey */
+    function journeyPoint(J, u){
+      u = Math.max(0, Math.min(J.total, u));
+      let lo = 0, hi = J.els.length - 1;
+      while(lo < hi){ const mid = (lo + hi) >> 1; if(J.els[mid].start + J.els[mid].len < u) lo = mid + 1; else hi = mid; }
+      const el = J.els[lo];
+      const f = el.len > 1e-6 ? Math.max(0, Math.min(1, (u - el.start) / el.len)) : 0;
+      if(el.line) return { x: el.from.x + (el.to.x - el.from.x) * f, y: el.from.y + (el.to.y - el.from.y) * f };
+      const ang = el.a0 + el.sweep * f;
+      return { x: el.C.x + Math.cos(ang) * el.R, y: el.C.y + Math.sin(ang) * el.R };
+    }
+    /* a follower segment's travel once the head has gone d: it
+       waits until the head is `lag` ahead of it, then eases in
+       with a soft exponential catch-up whose speed never exceeds
+       the head's own — it starts at rest and blends into the
+       head's motion instead of snapping straight to full speed */
+    const FOLLOW_R = 115;
+    function softFollow(d, lag){
+      const x = d - lag;
+      if(x <= 0) return 0;
+      return x - FOLLOW_R * (1 - Math.exp(-x / FOLLOW_R));
+    }
+    /* one frame of the slither: the snake's body sampled finely
+       along the journey between the tail's and head's positions,
+       close enough together that the bends render as curves */
+    function slitherFrame(J, n, headD){
+      const d = new Array(n);
+      for(let i=0;i<n;i++) d[i] = softFollow(headD, (n - 1 - i) * SLITHER_LAG);
+      const tailArc = J.rest[0] + d[0];
+      const headArc = J.rest[n - 1] + d[n - 1];
+      const M = Math.max(12, Math.min(80, Math.ceil((headArc - tailArc) / 13) + 1));
+      const pts = [];
+      for(let k=0;k<M;k++) pts.push(journeyPoint(J, tailArc + (headArc - tailArc) * (k / (M - 1))));
+      /* direction the head is travelling, for the arrowhead */
+      const back = journeyPoint(J, Math.max(0, headArc - 8));
+      let tx = pts[M-1].x - back.x, ty = pts[M-1].y - back.y;
+      const tl = Math.hypot(tx, ty);
+      if(tl > 1e-6){ tx /= tl; ty /= tl; } else { tx = 1; ty = 0; }
+      return { pts, tailTravel: d[0], tangent: { x: tx, y: ty } };
+    }
+    /* exit tint: as the arrow stretches off the board it turns
+       light blue at the tail end shading to purple at the head,
+       like the real game — a userSpace gradient stretched along
+       the body from tail point to head point, its colours blended
+       in from the arrow's normal colour at the very start */
+    const EXIT_BLUE = [56, 189, 248];    /* light sky blue */
+    const EXIT_PURPLE = [147, 92, 246];  /* violet */
+    function exitGradient(){
+      let grad = board.querySelector("#exit-grad");
+      if(grad) return grad;
+      const defs = document.createElementNS(NS, "defs");
+      grad = document.createElementNS(NS, "linearGradient");
+      grad.setAttribute("id", "exit-grad");
+      grad.setAttribute("gradientUnits", "userSpaceOnUse");
+      const s0 = document.createElementNS(NS, "stop");
+      s0.setAttribute("offset", "0"); s0.setAttribute("class", "eg-tail");
+      const s1 = document.createElementNS(NS, "stop");
+      s1.setAttribute("offset", "1"); s1.setAttribute("class", "eg-head");
+      grad.appendChild(s0); grad.appendChild(s1);
+      defs.appendChild(grad);
+      board.insertBefore(defs, board.firstChild);
+      return grad;
+    }
+    function blend(c1, c2, t){
+      return "rgb(" + Math.round(c1[0] + (c2[0] - c1[0]) * t) + "," +
+                      Math.round(c1[1] + (c2[1] - c1[1]) * t) + "," +
+                      Math.round(c1[2] + (c2[2] - c1[2]) * t) + ")";
+    }
+    function animateSlither(el, a, done){
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      el.style.willChange = "opacity";
+      el.style.pointerEvents = "none";
+      const shaft = el.querySelector(".shaft");
+      const hit = el.querySelector(".hit");
+      const poly = el.querySelector("polygon");
+      if(reduced || !shaft || !poly){
+        el.setAttribute("opacity", "0");
+        if(done) done();
+        return;
+      }
+      /* the arrow's resting colour, so the tint can blend in
+         from it instead of snapping straight to blue */
+      let baseCol = [29, 36, 71];
+      try{
+        const m = getComputedStyle(shaft).stroke.match(/\d+(?:\.\d+)?/g);
+        if(m && m.length >= 3) baseCol = [+m[0], +m[1], +m[2]];
+      }catch(e){}
+      const grad = exitGradient();
+      const stopTail = grad.querySelector(".eg-tail");
+      const stopHead = grad.querySelector(".eg-head");
+      shaft.style.stroke = "url(#exit-grad)";
+      poly.style.fill = "url(#exit-grad)";
+      const n = a.cells.length;
+      const J = buildJourney(a);
+      /* every point travels this far along the journey; when the
+         tail has covered it, the arrow is fully off the board.
+         The head covers LAG extra for each segment behind it,
+         because each segment only starts once the head is that
+         far ahead of it — with the lag this large the head races
+         away and the body stretches out long behind it, like a
+         snake stretching, instead of sliding off as one piece. */
+      const tailTarget = J.pathLen + J.headExit;
+      const headTravel = tailTarget + (n - 1) * SLITHER_LAG + FOLLOW_R;
+      /* duration follows the distance, so the head's peak speed
+         — and with it the turn rate at the bends — stays gentle
+         however long the arrow's way out is */
+      const totalDur = Math.min(1600, Math.max(700, Math.round(headTravel * .95)));
+      /* the arrow stays bright and solid while it stretches,
+         then fades away over the last stretch of the tail's
+         journey, fully transparent as it leaves the board */
+      const fadeStartDist = tailTarget * .55;
+      const t0 = performance.now();
+      function frame(now){
+        const elapsed = now - t0;
+        const f = Math.min(1, elapsed / totalDur);
+        /* smootherstep: the head eases in from rest and eases out
+           at the end — no snap at either end of the glide */
+        const e = f * f * f * (f * (f * 6 - 15) + 10);
+        const fr = slitherFrame(J, n, headTravel * e);
+        const ptsStr = fr.pts.map(p => p.x.toFixed(1) + "," + p.y.toFixed(1)).join(" ");
+        shaft.setAttribute("points", ptsStr);
+        if(hit) hit.setAttribute("points", ptsStr);
+        /* the arrowhead rides on the head point, aiming along
+           the head's direction of travel */
+        const hp = fr.pts[fr.pts.length - 1], ux = fr.tangent.x, uy = fr.tangent.y;
+        const tipX = hp.x + ux*46, tipY = hp.y + uy*46;
+        const bx = hp.x + ux*4, by = hp.y + uy*4;
+        poly.setAttribute("points",
+          tipX.toFixed(1) + "," + tipY.toFixed(1) + " " +
+          (bx + uy*23).toFixed(1) + "," + (by + ux*23).toFixed(1) + " " +
+          (bx - uy*23).toFixed(1) + "," + (by - ux*23).toFixed(1));
+        /* tint: stretch the blue→purple gradient along the body
+           from tail to head, blending its colours in from the
+           arrow's normal colour over the first part of the exit */
+        const tint = Math.min(1, e / .22);
+        const tp = fr.pts[0];
+        grad.setAttribute("x1", tp.x.toFixed(1)); grad.setAttribute("y1", tp.y.toFixed(1));
+        grad.setAttribute("x2", hp.x.toFixed(1)); grad.setAttribute("y2", hp.y.toFixed(1));
+        if(stopTail) stopTail.setAttribute("stop-color", blend(baseCol, EXIT_BLUE, tint));
+        if(stopHead) stopHead.setAttribute("stop-color", blend(baseCol, EXIT_PURPLE, tint));
+        /* fade tied to the tail's own progress (not the clock) */
+        let fade;
+        if(fr.tailTravel <= fadeStartDist) fade = 1;
+        else if(fr.tailTravel >= tailTarget) fade = 0;
+        else fade = 1 - (fr.tailTravel - fadeStartDist) / (tailTarget - fadeStartDist);
+        el.setAttribute("opacity", fade.toFixed(3));
+        if(elapsed < totalDur) requestAnimationFrame(frame);
+        else { el.style.willChange = ""; if(done) done(); }
+      }
+      requestAnimationFrame(frame);
+    }
+    function tapArrow(a){
+      if(!G.active || G.animating || a.cleared) return;
+      const el = G.arrowEls.get(a.id);
+      if(rayBlocked(a)){
+        /* blocked by another arrow: shake red, lose a heart */
+        G.mistakes++;
+        G.hearts = Math.max(0, G.hearts - 1);
+        sndError(); buzz();
+        renderGameHead();
+        if(el){
+          el.classList.add("blocked","shake");
+          setTimeout(() => el.classList.remove("blocked","shake"), 620);
+        }
+        if(G.hearts <= 0){
+          G.animating = true;
+          setTimeout(gameOver, 700);
+        }
+        return;
+      }
+      /* the way out is clear: slither off the board and clear */
+      G.animating = true;
+      sndSlide();
+      if(el) board.appendChild(el);   /* slither over its neighbours, not behind them */
+      animateSlither(el, a, () => {
+        a.cleared = true;
+        a.cells.forEach(c => G.occupied.delete(key(c.x, c.y)));
+        el.remove();
+        G.collected++; S.stats.arrowsCollected++; S.leaguePoints++;
+        updateProgress(); saveGame();
+        G.animating = false;
+        if(G.arrows.every(x => x.cleared)) setTimeout(winGame, 220);
+      });
+    }
+    function useHint(){
+      if(!G.active || G.animating) return;
+      if(G.hintsLeft <= 0){ toast("No hints left on this level."); return; }
+      const free = G.arrows.filter(a => !a.cleared && !rayBlocked(a));
+      if(!free.length) return;
+      const a = free[Math.floor(Math.random()*free.length)];
+      G.hintsLeft--; G.hintsUsed++;
+      updateHintBtn(); sndClick();
+      const el = G.arrowEls.get(a.id);
+      if(el){
+        el.classList.add("hintflash");
+        setTimeout(() => el.classList.remove("hintflash"), 2900);
+      }
+    }
+    /* input: each arrow handles its own tap (see buildBoard) —
+       no dragging, no dot, no keys */
+
+    function elapsedStr(){
+      const sec = Math.max(1, Math.round((Date.now()-G.startedAt)/1000));
+      return Math.floor(sec/60) + ":" + String(sec%60).padStart(2,"0");
+    }
+    function winGame(){
+      G.active = false; sndWin();
+      const perfect = G.mistakes === 0, flawless = perfect && G.hintsUsed === 0;
+      S.stats.totalWins++;
+      if(perfect) S.stats.perfectWins++;
+      if(flawless) S.stats.flawlessWins++;
+      if(G.cfg.tier === 4) S.stats.nightmareWins++;
+      S.stats.winsToday++;
+      S.stats.winStreak++; S.stats.bestWinStreak = Math.max(S.stats.bestWinStreak, S.stats.winStreak);
+      let title = "Excellent!", sub = "";
+      if(G.mode === "daily"){
+        S.stats.challengeWins++;
+        if(G.day) S.dailyDone[G.day] = true;
+        if(S.stats.challengeWins > 0 && S.stats.challengeWins % 7 === 0) S.stats.challengeTrophies++;
+        if(G.day === TODAY && S.dayStreak === 0) S.dayStreak = 1;
+        title = "Excellent!";
+        sub = "November " + G.day + " is in the bag.";
+      } else {
+        sub = "Level " + S.level + " cleared.";
+        S.level++;
+      }
+      if(flawless) sub += " Flawless — no mistakes, no hints!";
+      else if(perfect) sub += " Perfect — no mistakes!";
+      showOverlay({
+        icon:'<svg viewBox="0 0 24 24"><path fill="#ffb020" d="M12 2 21 5v6c0 5.2-3.6 9.4-9 11C6.6 20.4 3 16.2 3 11V5z"/><path fill="#ffd25e" d="m8.5 12 2.4 2.4L15.6 9.7l1.4 1.4-6.1 6.1L7.1 13.4z"/></svg>',
+        title, sub,
+        stats:[["Time", elapsedStr()], ["Mistakes", G.mistakes], ["Arrows Collected", G.collected]],
+        primary: G.mode === "daily" ? "Back to Calendar" : "Play Level " + S.level,
+        onPrimary: () => { hideOverlay(); G.mode === "daily" ? (showScreen("challenge"), renderCalendar()) : startGame("level"); },
+        secondary:"Home", onSecondary: () => { hideOverlay(); goHome(); },
+      });
+      confetti(); /* after showOverlay: the pieces only animate once the overlay is visible */
+      saveGame();
+      refreshMeta();
+    }
+    function gameOver(){
+      if(!G.active) return;
+      G.active = false; S.stats.winStreak = 0; saveGame();
+      showOverlay({
+        icon:'<svg viewBox="0 0 24 24"><path fill="#ff4657" d="M12 21C7 16.5 3 13.2 3 9.3 3 6.4 5.2 4.5 7.7 4.5c1.7 0 3.3.9 4.3 2.4 1-1.5 2.6-2.4 4.3-2.4 2.5 0 4.7 1.9 4.7 4.8 0 3.9-4 7.2-9 11.7z"/><path fill="#fff" d="m9 9.2 6 5.6M15 9.2l-6 5.6" stroke="#fff" stroke-width="1.6"/></svg>',
+        title:"Out of Hearts",
+        sub:"Three blocked arrows — that's the last heart gone. Look for an arrow whose path to the edge is clear, clear it, and work from there.",
+        stats:[["Collected", G.collected + " / " + G.totalArrows], ["Time", elapsedStr()]],
+        primary:"Try Again",
+        onPrimary: () => { hideOverlay(); startGame(G.mode, G.day); },
+        secondary:"Home", onSecondary: () => { hideOverlay(); goHome(); },
+      });
+    }
+    /* overlay helpers */
+    let ovPrimaryFn = null, ovSecondaryFn = null;
+    function showOverlay(o){
+      $("#ov-ico").innerHTML = o.icon || "";
+      $("#ov-title").textContent = o.title;
+      $("#ov-sub").textContent = o.sub || "";
+      $("#ov-stats").innerHTML = (o.stats||[]).map(([k,v])=> '<span><small>'+k+'</small>'+v+'</span>').join("");
+      const p = $("#ov-primary"); p.textContent = o.primary; ovPrimaryFn = o.onPrimary;
+      const sBtn = $("#ov-secondary"); sBtn.textContent = o.secondary; ovSecondaryFn = o.onSecondary;
+      $("#overlay").classList.add("on");
+    }
+    function hideOverlay(){ $("#overlay").classList.remove("on"); $("#confetti").innerHTML = ""; }
+    $("#ov-primary").addEventListener("click", ()=>{ sndClick(); ovPrimaryFn && ovPrimaryFn(); });
+    $("#ov-secondary").addEventListener("click", ()=>{ sndClick(); ovSecondaryFn && ovSecondaryFn(); });
+    function confetti(){
+      const c = $("#confetti"); c.innerHTML = "";
+      const colors = ["#5b7cff","#ff4657","#ffb020","#1fc76b","#e93fd8"];
+      for(let i=0;i<36;i++){
+        const el = document.createElement("i");
+        el.style.left = Math.random()*100 + "%";
+        el.style.setProperty("--c", colors[i % colors.length]);
+        el.style.animationDuration = (1.1 + Math.random()*1.2) + "s";
+        el.style.animationDelay = (Math.random()*.35) + "s";
+        c.appendChild(el);
+      }
+      setTimeout(()=> c.innerHTML = "", 3000);
+    }
+    function showInfo(title, html){
+      $("#ov2-title").textContent = title;
+      $("#ov2-body").innerHTML = html;
+      $("#overlay2").classList.add("on");
+    }
+    $("#ov2-close").addEventListener("click", ()=>{ sndClick(); $("#overlay2").classList.remove("on"); });
+
+    /* ============================================================
+       NAVIGATION
+       ============================================================ */
+    const mainEl = $("#main-scroll");
+    function showScreen(name){
+      S.screen = name;
+      $$(".screen").forEach(el => el.classList.toggle("on", el.id === "screen-" + name));
+      $("#tabs").classList.toggle("hide", name === "game");
+      mainEl.classList.toggle("no-nav", name === "game");
+      $$("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === name));
+      mainEl.scrollTop = 0;
+      if(name === "profile") renderProfile();
+      if(name === "challenge") renderCalendar();
+      if(name === "league") renderLeague();
+    }
+    function goHome(){ refreshMeta(); showScreen("home"); }
+    $$("#tabs button").forEach(b => b.addEventListener("click", ()=>{ sndClick(); showScreen(b.dataset.tab); }));
+    $$("[data-back]").forEach(b => b.addEventListener("click", ()=>{ sndClick(); goHome(); }));
+
+    function refreshMeta(){
+      $("#home-level").textContent = S.level;
+      $("#streak-num").textContent = S.dayStreak;
+      $("#challenge-date").textContent = "November " + TODAY;
+      paintShield("bronze", currentLeague(S.leaguePoints));
+    }
+
+    /* home */
+    $("#btn-play").addEventListener("click", ()=>{ sndClick(); startGame("level"); });
+    $("#btn-challenge-play").addEventListener("click", ()=>{ sndClick(); showScreen("challenge"); });
+    $("#btn-league").addEventListener("click", ()=>{ sndClick(); showScreen("league"); });
+
+    /* game controls */
+    $("#game-back").addEventListener("click", ()=>{ sndClick(); G.active = false; goHome(); });
+    $("#game-restart").addEventListener("click", ()=>{ sndClick(); startGame(G.mode, G.day); });
+    $("#btn-hint").addEventListener("click", useHint);
+    $("#btn-grid").addEventListener("click", function(){
+      G.showGrid = !G.showGrid;
+      this.setAttribute("aria-pressed", G.showGrid);
+      if(G.gridEl) G.gridEl.style.display = G.showGrid ? "" : "none";
+      sndClick();
+    });
+
+    /* ============================================================
+       CHALLENGE CALENDAR — November 2026 (Nov 1 is a Sunday)
+       ============================================================ */
+    function renderCalendar(){
+      const grid = $("#cal-grid"); grid.innerHTML = "";
+      ["Mo","Tu","We","Th","Fr","Sa","Su"].forEach(d => {
+        const el = document.createElement("div"); el.className = "dow"; el.textContent = d; grid.appendChild(el);
+      });
+      for(let i=0;i<6;i++){ const el = document.createElement("div"); grid.appendChild(el); } // blanks before Sun Nov 1
+      for(let day=1; day<=DAYS_IN_MONTH; day++){
+        const b = document.createElement("button");
+        b.className = "day"; b.textContent = day;
+        if(day > TODAY){ b.classList.add("future"); b.disabled = true; }
+        if(S.dailyDone[day]) b.classList.add("done");
+        if(day === TODAY) b.classList.add("today");
+        if(day === S.selectedDay) b.classList.add("selected");
+        b.setAttribute("aria-label", "November " + day + (S.dailyDone[day] ? " (completed)" : ""));
+        b.addEventListener("click", ()=>{ S.selectedDay = day; saveGame(); sndClick(); renderCalendar(); });
+        grid.appendChild(b);
+      }
+      const done = Object.keys(S.dailyDone).length;
+      $("#cal-count").textContent = done;
+      $("#cal-bar").style.width = (done / DAYS_IN_MONTH * 100) + "%";
+    }
+    $("#btn-daily-play").addEventListener("click", ()=>{ sndClick(); startGame("daily", S.selectedDay); });
+    $("#cal-info").addEventListener("click", ()=> showInfo("Daily Challenge",
+      '<p class="legal">One new puzzle every day of November 2026. Days up to today (the 13th) are open — finish one to fill in its circle and grow your streak. Each day\'s board is fixed, so you can retry it as often as you like.</p>'));
+
+    /* ============================================================
+       PROFILE / STATS / AWARDS
+       ============================================================ */
+    const STAT_DEFS = [
+      { k:"totalWins",        label:"Total Wins",       icon:'<path fill="#ffb020" d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zm-3.5 4C6 8 4.5 10 4.5 12.5c2-.8 3.4-2.3 4-4.5zm7 0c.6 2.2 2 3.7 4 4.5C19.5 10 18 8 15.5 7zM12 8.2 13.4 11l2.8.3-2.1 1.9.6 2.8L12 14.6 9.3 16l.6-2.8-2.1-1.9 2.8-.3z"/>' },
+      { k:"perfectWins",      label:"Perfect Wins",     icon:'<circle cx="12" cy="12" r="9" fill="#ff5a4d"/><circle cx="12" cy="12" r="5.6" fill="#fff"/><circle cx="12" cy="12" r="2.6" fill="#ff5a4d"/><path fill="#1fc76b" d="m16.8 3.6 1 1.6 1.8-.4-1 1.6 1 1.6-1.8-.4-1 1.6-1-1.6-1.8.4 1-1.6-1-1.6 1.8.4z"/>' },
+      { k:"flawlessWins",     label:"Flawless Wins",    icon:'<path fill="#c9cfec" d="M12 3 20 9.5 12 21 4 9.5z"/><path fill="#aeb6dd" d="M12 3 8 9.5l4 11.5L16 9.5z"/>' },
+      { k:"nightmareWins",    label:"Nightmare Wins",   icon:'<path fill="#e8eaf6" d="M12 3a8 8 0 0 0-8 8c0 2.9 1.6 4.7 3 5.7V19a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-2.3c1.4-1 3-2.8 3-5.7a8 8 0 0 0-8-8zM8.8 13.6A1.9 1.9 0 1 1 10.7 11a1.9 1.9 0 0 1-1.9 2.6zm6.4 0A1.9 1.9 0 1 1 17.1 11a1.9 1.9 0 0 1-1.9 2.6z"/>' },
+      { k:"challengeWins",    label:"Challenge Wins",   icon:'<rect x="4" y="5" width="16" height="15" rx="2" fill="#ffb020"/><rect x="4" y="5" width="16" height="5" fill="#f59e0b"/><path fill="#fff" d="M8 2v4M16 2v4" stroke="#f59e0b" stroke-width="2.4"/><path fill="#fff" d="m9 15.5 2 2 4-4.5-1.4-1.3-2.6 2.9-.6-.7z"/>' },
+      { k:"challengeTrophies",label:"Challenge Trophies",icon:'<path fill="#ffb020" d="M7 4h10v2h3v3a5 5 0 0 1-5 5h-.4A6 6 0 0 1 13 16.9V18h3v2H8v-2h3v-1.1A6 6 0 0 1 9.4 14H9a5 5 0 0 1-5-5V6h3zm-1 4H6v1a3 3 0 0 0 2 2.8A9 9 0 0 1 7.3 8zm11 0a9 9 0 0 1-.7 3.8A3 3 0 0 0 18 9V8z"/>' },
+      { k:"dayStreak",        label:"Longest Streak",   icon:'<path fill="#ff8a3d" d="M12.7 2.3c.4 3.2-1 4.9-2.4 6.4C8.9 10.2 7.7 11.6 7.7 14a4.6 4.6 0 0 0 9.2 0c0-1.2-.5-2.2-1.1-3.2-.5 1-1.2 1.6-2 2 .3-3.4-.9-7.4-3.1-10.5z"/><path fill="#ffb020" d="M12.3 21a2.9 2.9 0 0 1-2.9-2.9c0-1.3.8-2.2 1.5-3 .5-.6 1-1.2 1.4-2 .4.8.9 1.4 1.4 2 .7.8 1.5 1.7 1.5 3A2.9 2.9 0 0 1 12.3 21z"/>' },
+      { k:"bestWinStreak",    label:"Highest Win Streak",icon:'<path fill="#ffb020" d="M5 20h14v2H5zM4 18l1.5-9L10 13l2-7 2 7 4.5-4L20 18z"/>' },
+      { k:"winsToday",        label:"Most Wins",        icon:'<path fill="#5b7cff" d="M12 3l2.5 5.3 5.7.6-4.2 3.9 1.1 5.7L12 15.7l-5.1 2.8L8 12.8 3.8 8.9l5.7-.6z"/><path fill="#9db1ff" d="M7 21c-1-2.6-3.2-4-5-4 0 2 1 3.4 2.4 4.4C5.3 22 6.2 22 7 21zm10 0c1-2.6 3.2-4 5-4 0 2-1 3.4-2.4 4.4C18.7 22 17.8 22 17 21z"/>' },
+      { k:"arrowsCollected",  label:"Arrows Collected", icon:'<path fill="#5b7cff" d="M4 15a8 6 0 0 1 16 0v3a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path fill="#ffb020" d="M11 3.5 8 10h2v4h2v-4h2zM15.5 5 13 10h1.8v3h1.9v-3h1.8zM6.5 5 4 10h1.8v3h1.9v-3h1.8z"/>' },
+    ];
+    const AWARD_DEFS = [
+      { label:"Level Legend",  sub:"levels cleared",  val:"1,000", get:()=>S.stats.totalWins,          target:1000, icon:'<circle cx="12" cy="12" r="9" fill="#dceaff"/><path fill="#2f9dff" d="m12 5 2 4.3 4.7.5-3.5 3.2 1 4.6L12 15.2l-4.2 2.4 1-4.6-3.5-3.2L10 9.3z"/>' },
+      { label:"Perfect Play",  sub:"perfect wins",    val:"1,000", get:()=>S.stats.perfectWins,        target:1000, icon:'<path fill="#dceaff" d="M12 3 21 8v8l-9 5-9-5V8z"/><circle cx="12" cy="12" r="5.4" fill="#ff5a4d"/><circle cx="12" cy="12" r="3.2" fill="#fff"/><circle cx="12" cy="12" r="1.5" fill="#ff5a4d"/><path fill="#1fc76b" d="m15.8 6.8.9.4.2 1 .9-.5-.2 1 .9.4-.9.6.1 1-.8-.5-.3 1-.9-.5-.9.5-.3-1-.8.5.1-1-.9-.6.9-.4-.2-1 .9.5.2-1z"/>' },
+      { label:"Unstoppable",   sub:"nightmare wins",  val:"50",    get:()=>S.stats.nightmareWins,      target:50,   icon:'<path fill="#dceaff" d="M12 2 21 5v6c0 5.2-3.6 9.4-9 11C6.6 20.4 3 16.2 3 11V5z"/><path fill="#f4f5fb" d="M12 6.5a5.5 5.5 0 0 0-5.5 5.5c0 2 1 3.2 2 4v1.5h7V16c1-.8 2-2 2-4A5.5 5.5 0 0 0 12 6.5zM9.7 13.2a1.3 1.3 0 1 1 0-2.6 1.3 1.3 0 0 1 0 2.6zm4.6 0a1.3 1.3 0 1 1 0-2.6 1.3 1.3 0 0 1 0 2.6z"/>' },
+      { label:"League Climber",sub:"league arrows",   val:"",      get:()=>S.leaguePoints,             target:500,  icon:'<circle cx="12" cy="12" r="9.5" fill="#dceaff"/><path fill="#b9c0d8" d="M12 5.5 18.5 8v4c0 3.8-2.6 6.9-6.5 8.5C8.1 18.9 5.5 15.8 5.5 12V8z"/><path fill="#8f97b5" d="M12 7.2 17 9v3c0 3.1-2.1 5.6-5 7-2.9-1.4-5-3.9-5-7V9z"/>' },
+      { label:"League Fighter",sub:"total wins",      val:"",      get:()=>S.stats.totalWins,          target:100,  icon:'<rect x="3.5" y="3.5" width="17" height="17" rx="4" fill="#dceaff"/><path fill="#f4f5fb" d="M9 8a3 3 0 0 1 3 3v1h4.5A2.5 2.5 0 0 1 19 14.5c0 2-1.6 3.5-3.5 3.5H10a4 4 0 0 1-4-4v-3a3 3 0 0 1 3-3z"/>' },
+      { label:"League Winner", sub:"win streak",      val:"",      get:()=>S.stats.bestWinStreak,      target:25,   icon:'<path fill="#dceaff" d="M12 3 21 8v8l-9 5-9-5V8z"/><circle cx="12" cy="12" r="4.4" fill="#f4f5fb"/><path fill="#dceaff" d="M10 4.6h4l-.6 2h-2.8z"/>' },
+    ];
+    function fmt(n){ return n.toLocaleString("en-US"); }
+    function statValue(k){
+      if(k === "dayStreak") return S.dayStreak;
+      return S.stats[k] || 0;
+    }
+    function renderProfile(){
+      $("#player-name").textContent = S.playerName;
+      $("#prof-level").textContent = S.level;
+      $("#prof-streak").textContent = S.dayStreak + (S.dayStreak === 1 ? " day" : " days");
+      $("#prof-league").textContent = currentLeague(S.leaguePoints).name;
+      // awards
+      const ag = $("#award-grid"); ag.innerHTML = "";
+      AWARD_DEFS.forEach(a => {
+        const v = a.get(), tier = Math.min(10, Math.floor(v / a.target * 10));
+        const el = document.createElement("div");
+        el.className = "award" + (v === 0 ? " locked" : "");
+        el.innerHTML = (v > 0 ? '<span class="rdot"></span>' : "") +
+          '<div class="tile"><svg viewBox="0 0 24 24">' + a.icon + '</svg>' + (a.val ? '<span class="val">'+a.val+'</span>' : "") + '</div>' +
+          '<h4>' + a.label + '</h4><p>' + tier + ' of 10</p>';
+        ag.appendChild(el);
+      });
+      // stats
+      const sg = $("#stat-grid"); sg.innerHTML = "";
+      STAT_DEFS.forEach(d => {
+        const v = statValue(d.k);
+        const el = document.createElement("div");
+        el.className = "stat" + (v === 0 ? " dim" : "");
+        el.innerHTML = '<div class="tile"><svg viewBox="0 0 24 24">' + d.icon + '</svg><span class="val">' + fmt(v) + '</span></div><p>' + d.label + '</p>';
+        sg.appendChild(el);
+      });
+    }
+    $("#tab-profile").addEventListener("click", function(){
+      this.classList.add("on"); $("#tab-stats").classList.remove("on");
+      this.setAttribute("aria-selected","true"); $("#tab-stats").setAttribute("aria-selected","false");
+      $("#pane-profile").hidden = false; $("#pane-stats").hidden = true; sndClick();
+    });
+    $("#tab-stats").addEventListener("click", function(){
+      this.classList.add("on"); $("#tab-profile").classList.remove("on");
+      this.setAttribute("aria-selected","true"); $("#tab-profile").setAttribute("aria-selected","false");
+      $("#pane-profile").hidden = true; $("#pane-stats").hidden = false; sndClick();
+    });
+    /* rename */
+    let editingName = false;
+    $("#btn-edit-name").addEventListener("click", function(){
+      const span = $("#player-name"), input = $("#player-name-input");
+      if(!editingName){
+        editingName = true;
+        input.value = S.playerName; span.hidden = true; input.hidden = false; input.focus(); input.select();
+        this.innerHTML = '<svg viewBox="0 0 24 24"><path fill="#20264a" d="m9.5 16.2-4-4L4 13.7l5.5 5.5L20 8.7 18.5 7.2z"/></svg>';
+      } else {
+        editingName = false;
+        const v = input.value.trim();
+        if(v) S.playerName = v;
+        span.textContent = S.playerName; input.hidden = true; span.hidden = false;
+        this.innerHTML = '<svg viewBox="0 0 24 24"><path fill="#20264a" d="M3 17.2V21h3.8L17.9 9.9l-3.8-3.8L3 17.2zM20.7 7.1a1 1 0 0 0 0-1.4l-2.4-2.4a1 1 0 0 0-1.4 0l-1.8 1.8 3.8 3.8z"/></svg>';
+        saveGame(); toast("Name saved");
+      }
+      sndClick();
+    });
+
+    /* ============================================================
+       LEAGUE — the ladder runs Bronze, Silver, Gold, Diamond,
+       Epic, Legendary, Master. Your league is the highest tier
+       whose points threshold your saved league score (one point
+       per arrow cleared) has reached. The leaderboard uses your
+       real session score.
+       ============================================================ */
+    const LEAGUES = [
+      { name:"Bronze",    min:0,    stops:["#e8a583","#c97e5d","#a55f42"], line:"#8a4f35" },
+      { name:"Silver",    min:200,  stops:["#f2f4fb","#c3c9dc","#98a0ba"], line:"#7c84a0" },
+      { name:"Gold",      min:500,  stops:["#ffe08a","#ffb020","#e08e00"], line:"#b06f00" },
+      { name:"Diamond",   min:1000, stops:["#c8f4ff","#7fd8f7","#35a3d8"], line:"#2680ad" },
+      { name:"Epic",      min:2000, stops:["#e3b3ff","#a35cff","#7b2ff2"], line:"#5c1ec0" },
+      { name:"Legendary", min:4000, stops:["#ffc46b","#ff7a3d","#e83f6b"], line:"#b02a4a" },
+      { name:"Master",    min:8000, stops:["#8a93b8","#454d78","#20264a"], line:"#ffb020" },
+    ];
+    function currentLeague(points){
+      let cur = LEAGUES[0];
+      LEAGUES.forEach(l => { if(points >= l.min) cur = l; });
+      return cur;
+    }
+    /* repaint a shield gradient (and every shield outline) in
+       the current league's colours */
+    function paintShield(gradId, league){
+      const grad = document.getElementById(gradId);
+      if(grad){
+        const stops = grad.querySelectorAll("stop");
+        league.stops.forEach((c, i) => { if(stops[i]) stops[i].setAttribute("stop-color", c); });
+      }
+      $$(".shield-line").forEach(p => p.setAttribute("stroke", league.line));
+    }
+    const NPCS = [
+      { name:"Player13174", flag:"🇹🇷", score:2747 }, { name:"Player30479", flag:"🇺🇸", score:2694 },
+      { name:"Player17486", flag:"🌐", score:2604 }, { name:"Player39730", flag:"🇨🇱", score:2463 },
+      { name:"Player54803", flag:"🌐", score:1881 }, { name:"Player26371", flag:"🇮🇳", score:1817 },
+      { name:"Player14893", flag:"🇮🇳", score:1627 }, { name:"Player68847", flag:"🇹🇷", score:1449 },
+      { name:"Devjii6",     flag:"🇮🇳", score:1180 }, { name:"greendate",   flag:"🌐", score:940 },
+      { name:"SARO2010",    flag:"🇮🇳", score:655 },  { name:"Player24610", flag:"🇰🇷", score:402 },
+    ];
+    function renderLeague(){
+      const mine = S.leaguePoints;
+      const rows = NPCS.map(n => ({...n, me:false})).concat([{ name:S.playerName, flag:"🌐", score:mine, me:true }]);
+      rows.sort((a,b)=> b.score - a.score);
+      const list = $("#lb-list"); list.innerHTML = "";
+      rows.forEach((r, i) => {
+        const rank = i + 1;
+        const row = document.createElement("div");
+        row.className = "lb-row" + (r.me ? " me" : "");
+        let rankHtml;
+        if(rank === 1) rankHtml = '<span class="lb-rank medal" style="background:#c9a227">1</span>';
+        else if(rank === 2) rankHtml = '<span class="lb-rank medal" style="background:#aab0c4">2</span>';
+        else if(rank === 3) rankHtml = '<span class="lb-rank medal" style="background:#cd8663">3</span>';
+        else rankHtml = '<span class="lb-rank">' + rank + '</span>';
+        row.innerHTML = rankHtml +
+          '<span class="lb-flag" style="background:var(--card)">' + r.flag + '<span class="on"></span></span>' +
+          '<span class="lb-name">' + escapeHtml(r.name) + (r.me ? " (You)" : "") + '</span>' +
+          '<span class="lb-score"><svg viewBox="0 0 24 24"><path d="M5 3l14 7-6 2-2 6z"/></svg>' + fmt(r.score) + '</span>';
+        list.appendChild(row);
+      });
+      const lg = currentLeague(mine);
+      $("#league-name").textContent = lg.name + " League";
+      $("#league-sub").querySelector("span").textContent = lg === LEAGUES[0] ? "Results" : "2d 18h left";
+      paintShield("bronze2", lg);
+    }
+    function escapeHtml(s){ return s.replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+    $("#league-close").addEventListener("click", ()=>{ sndClick(); goHome(); });
+    $("#league-info").addEventListener("click", ()=> showInfo("Leagues",
+      '<p class="legal">Every arrow you slide off the board earns a league point. Earn points to climb the ladder: Bronze from 0 points, Silver from 200, Gold from 500, Diamond from 1,000, Epic from 2,000, Legendary from 4,000, and Master from 8,000 points. Finish above the other players in your league before the season ends to promote. Your score here is your real saved score.</p>'));
+
+    /* ============================================================
+       SETTINGS
+       ============================================================ */
+    $$(".switch").forEach(sw => sw.addEventListener("click", ()=>{
+      const on = sw.getAttribute("aria-checked") !== "true";
+      sw.setAttribute("aria-checked", on);
+      const k = sw.dataset.set;
+      S.settings[k] = on; saveGame();
+      if(k === "vib"){ S.settings.vib = on; if(on) buzz(); toast("Vibrations " + (on ? "on" : "off")); }
+      if(k === "sound"){ S.settings.sound = on; if(on) sndClick(); toast("Sounds " + (on ? "on" : "off")); }
+      if(k === "dark"){ S.settings.dark = on; document.documentElement.dataset.theme = on ? "dark" : "light"; toast("Dark mode " + (on ? "on" : "off")); }
+      if(k === "account"){ toast(on ? "Account connected for this session" : "Account disconnected"); }
+      if(k === "ads"){ toast(on ? "Ads removed — enjoy the quiet" : "Ads are already off in this version"); }
+      if(k !== "sound") sndClick();
+    }));
+    $("#set-restore").addEventListener("click", ()=>{ sndClick(); toast("No purchases to restore"); });
+    $("#set-rate").addEventListener("click", ()=>{
+      sndClick();
+      showInfo("Rate Arrows",
+        '<div class="stars" id="rate-stars">' + [1,2,3,4,5].map(i =>
+          '<button data-star="'+i+'" aria-label="'+i+' stars"><svg viewBox="0 0 24 24"><path d="m12 2 3 6.6 7 .8-5.2 4.8 1.4 7L12 17.7 5.8 21.2l1.4-7L2 9.4l7-.8z"/></svg></button>').join("") +
+        '</div><p class="legal" style="text-align:center">Tap a star to rate this session.</p>');
+      $$("#rate-stars button").forEach(b => b.addEventListener("click", ()=>{
+        const n = +b.dataset.star;
+        $$("#rate-stars button").forEach(x => x.classList.toggle("lit", +x.dataset.star <= n));
+        sndWin(); toast("Thanks for the " + n + "-star rating!");
+        setTimeout(()=> $("#overlay2").classList.remove("on"), 700);
+      }));
+    });
+    const LEGAL = {
+      privacy: ["Privacy", '<p class="legal">This version of Arrows runs entirely in your browser. Your level, stats and settings are saved in this browser (localStorage), so your progress is still here when you come back — nothing is uploaded, tracked, or shared.</p>'],
+      terms: ["Terms of Service", '<p class="legal">Arrows is a casual puzzle game provided as-is for personal entertainment. Clear boards, chase streaks, and be nice in the leagues. No purchases are offered in this version.</p>'],
+      licenses: ["Open Source Licenses", '<p class="legal">Built with plain HTML, CSS and JavaScript and the Nunito typeface (SIL Open Font License 1.1, © The Nunito Project Authors). No third-party code libraries are bundled.</p>'],
+    };
+    $$("[data-legal]").forEach(b => b.addEventListener("click", ()=>{
+      sndClick(); const [t, h] = LEGAL[b.dataset.legal]; showInfo(t, h);
+    }));
+
+    /* init: restore saved settings onto the switches + theme */
+    $$(".switch").forEach(sw => {
+      const k = sw.dataset.set;
+      if(k in S.settings) sw.setAttribute("aria-checked", S.settings[k] ? "true" : "false");
+    });
+    if(S.settings.dark) document.documentElement.dataset.theme = "dark";
+    $("#player-name").textContent = S.playerName;
+    refreshMeta();
+    renderCalendar();
+    </script>
+  </body>
+</html>
