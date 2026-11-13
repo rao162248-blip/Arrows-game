@@ -19,6 +19,7 @@
         --board:#ffffff; --gridline:#e3e6f7;
         --shadow:0 10px 30px rgba(47,53,96,.12);
         --nav-bg:#eceef9;
+        --chrome:172px;   /* vertical space the game screen keeps for its header, progress bar and tip */
       }
       [data-theme="dark"]{
         --bg:#141830; --bg-soft:#1a1e3a; --card:#232847; --card-2:#2b3054;
@@ -31,9 +32,11 @@
       }
       *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
       html,body{height:100%;}
+      html{-webkit-text-size-adjust:100%;}
       body{
         margin:0; font-family:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;
         background:var(--bg-soft); color:var(--ink);
+        touch-action:manipulation; overflow-x:clip;
       }
       button{font-family:inherit; cursor:pointer; border:none; background:none; color:inherit; min-height:2.75rem;}
       button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--primary); outline-offset:2px;}
@@ -43,8 +46,9 @@
         background:var(--bg); display:flex; flex-direction:column; overflow:hidden;
         box-shadow:0 0 0 1px var(--line), var(--shadow);
       }
-      @media (min-width:560px){ #app{min-height:100dvh;} }
-      main{flex:1; overflow-y:auto; padding:18px 20px 110px; scrollbar-width:thin;}
+      @media (min-width:768px){ #app{max-width:600px;} }
+      @media (min-width:1200px){ #app{max-width:660px;} }
+      main{flex:1; overflow-y:auto; padding:18px max(20px, env(safe-area-inset-right)) 110px max(20px, env(safe-area-inset-left)); scrollbar-width:thin;}
       main.no-nav{padding-bottom:24px;}
       .screen{display:none; animation:fade .18s ease;}
       .screen.on{display:block;}
@@ -100,7 +104,7 @@
       /* ---------- bottom nav ---------- */
       nav#tabs{
         position:absolute; left:0; right:0; bottom:0; background:var(--nav-bg);
-        display:grid; grid-template-columns:repeat(4,1fr); padding:10px 8px calc(10px + env(safe-area-inset-bottom));
+        display:grid; grid-template-columns:repeat(4,1fr); padding:10px max(8px, env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
         z-index:30;
       }
       nav#tabs.hide{display:none;}
@@ -121,10 +125,16 @@
       .progress{height:7px; background:var(--line); border-radius:99px; margin:12px 20px 6px; overflow:hidden;}
       .progress i{display:block; height:100%; width:0%; background:var(--primary); border-radius:99px; transition:width .25s ease;}
       .board-wrap{position:relative; margin:6px 10px 0;}
-      #board{width:100%; height:auto; display:block; background:var(--board); border-radius:8px; touch-action:none;}
+      #board{
+        width:100%;
+        width:min(100%, calc((100vh - var(--chrome)) * var(--ar, 1)));
+        width:min(100%, calc((100dvh - var(--chrome)) * var(--ar, 1)));
+        max-width:100%; height:auto; display:block; margin:0 auto;
+        background:var(--board); border-radius:8px; touch-action:none;
+      }
       #board .tap-arrow{cursor:pointer;}
       #board .tap-arrow .shaft{fill:none; stroke:var(--arrow); stroke-width:25; stroke-linecap:round; stroke-linejoin:round;}
-      #board .tap-arrow .hit{fill:none; stroke:rgba(0,0,0,0); stroke-width:58; stroke-linecap:round; stroke-linejoin:round; pointer-events:stroke;}
+      #board .tap-arrow .hit{fill:none; stroke:rgba(0,0,0,0); stroke-width:72; stroke-linecap:round; stroke-linejoin:round; pointer-events:stroke;}
       #board .tap-arrow polygon{fill:var(--arrow);}
       #board .tap-arrow.blocked .shaft{stroke:var(--danger);}
       #board .tap-arrow.blocked polygon{fill:var(--danger);}
@@ -136,6 +146,23 @@
       .shake{animation:shake .32s ease;}
       @keyframes pulseHint{0%,100%{opacity:1}50%{opacity:.45}}
       .hinting{animation:pulseHint .5s ease 4;}
+      /* keyboard focus + mouse hover on the board (desktop) */
+      #board .tap-arrow:focus{outline:none;}
+      #board .tap-arrow:focus-visible .shaft{stroke:var(--primary);}
+      #board .tap-arrow:focus-visible polygon{fill:var(--primary);}
+      @media (hover:hover){ #board .tap-arrow:hover{opacity:.78;} }
+      .game-keys{display:none; text-align:center; color:var(--faint); font-weight:700; font-size:.82rem; padding:4px 30px 0;}
+      @media (hover:hover) and (pointer:fine){ .game-keys{display:block;} }
+      /* short landscape screens (phones on their side): tighten
+         the game chrome so the board keeps as much room as possible */
+      @media (orientation:landscape) and (max-height:560px){
+        :root{--chrome:128px;}
+        .game-head{padding-top:8px;}
+        .progress{margin-top:6px; margin-bottom:2px;}
+        .game-foot{display:none;}
+        .logo{margin-top:2vh;}
+        .play-wrap{margin-top:3vh;}
+      }
       @media (prefers-reduced-motion: reduce){ .shake,.hinting{animation:none} }
       .hint-btn{
         position:absolute; top:14px; right:0; z-index:5;
@@ -158,7 +185,7 @@
         display:none; align-items:center; justify-content:center; padding:24px;
       }
       .overlay.on{display:flex;}
-      .sheet{background:var(--bg); border-radius:26px; padding:28px 24px; width:100%; max-width:360px; text-align:center; box-shadow:var(--shadow);}
+      .sheet{background:var(--bg); border-radius:26px; padding:28px 24px; width:100%; max-width:360px; text-align:center; box-shadow:var(--shadow); max-height:calc(100vh - 32px); max-height:calc(100dvh - 32px); overflow-y:auto;}
       .sheet h2{margin:.2rem 0 .4rem; font-size:1.7rem; font-weight:900; color:var(--navy);}
       .sheet p{margin:.3rem 0 1rem; font-weight:700; color:var(--muted);}
       .sheet .row-btns{display:flex; flex-direction:column; gap:10px; align-items:center;}
@@ -179,7 +206,7 @@
       .cal .dow{text-align:center; color:var(--faint); font-weight:900; padding:4px 0;}
       .cal .day{
         aspect-ratio:1; border-radius:50%; display:flex; align-items:center; justify-content:center;
-        font-weight:900; font-size:1.05rem; background:var(--card); color:var(--ink); min-height:2.4rem; position:relative;
+        font-weight:900; font-size:1.05rem; background:var(--card); color:var(--ink); min-height:2.75rem; position:relative;
       }
       .cal .day.future{background:transparent; color:var(--faint);}
       .cal .day.today{background:var(--primary); color:#fff;}
@@ -234,8 +261,8 @@
       .set-row svg{width:27px; height:27px; fill:var(--ink); flex:none;}
       .set-row .right{margin-left:auto; color:var(--muted); font-weight:800; display:flex; align-items:center; gap:4px;}
       button.set-row{min-height:3.6rem;}
-      .switch{position:relative; width:60px; height:36px; min-height:36px; flex:none; margin-left:auto; padding:0;}
-      .switch .tr{position:absolute; inset:0; background:var(--faint); border-radius:99px; transition:background .15s; pointer-events:none;}
+      .switch{position:relative; width:60px; height:44px; min-height:44px; flex:none; margin-left:auto; padding:0;}
+      .switch .tr{position:absolute; left:0; right:0; top:50%; transform:translateY(-50%); height:36px; background:var(--faint); border-radius:99px; transition:background .15s; pointer-events:none;}
       .switch .tr::after{content:""; position:absolute; top:4px; left:4px; width:28px; height:28px; border-radius:50%; background:#fff; transition:left .15s; box-shadow:0 1px 4px rgba(0,0,0,.25);}
       .switch[aria-checked="true"] .tr{background:var(--navy);}
       [data-theme="dark"] .switch[aria-checked="true"] .tr{background:var(--primary);}
@@ -403,11 +430,6 @@
               </div>
             </div>
             <div class="set-group">
-              <div class="set-row">
-                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><rect x="3.6" y="10.6" width="16.8" height="2.9" rx="1.4" transform="rotate(-45 12 12)" style="fill:var(--card)"/></svg>
-                <span>Remove Ads</span>
-                <button class="switch" role="switch" aria-checked="false" aria-label="Remove Ads" data-set="ads"><span class="tr"></span></button>
-              </div>
               <button class="set-row" id="set-restore">
                 <svg viewBox="0 0 24 24"><path d="M12 5V1.8L6.8 6 12 10.2V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg>
                 <span>Restore purchases</span>
@@ -473,6 +495,7 @@
               <button class="grid-btn" id="btn-grid" aria-label="Toggle grid" aria-pressed="false">#</button>
             </div>
             <p class="game-foot" id="game-tip">Tap an arrow and it slides off the board — but only if the path ahead of it is clear. A blocked arrow costs a heart. Clear them all to win.</p>
+            <p class="game-keys" aria-hidden="true">Keyboard: arrow keys pick an arrow &middot; Enter clears it &middot; H hint &middot; R restart &middot; Esc back</p>
           </section>
         </main>
 
@@ -761,7 +784,7 @@
       active:false, mode:"level", day:0, cfg:null, arrows:[], occupied:new Set(),
       hearts:3, mistakes:0, hintsLeft:3, hintsUsed:0,
       collected:0, totalArrows:0, animating:false,
-      startedAt:0, showGrid:false, gridEl:null, arrowEls:null,
+      startedAt:0, showGrid:false, gridEl:null, arrowEls:null, focusId:-1,
     };
     const CELL = 100, MARGIN = 34;
     const SLITHER_LAG = 130;  /* how far the head pulls ahead of each segment behind it — big, so the body stretches out long like a snake as it leaves */
@@ -780,7 +803,7 @@
       arrows.forEach(a => a.cells.forEach(c => G.occupied.add(key(c.x, c.y))));
       G.totalArrows = arrows.length;
       G.hearts = 3; G.mistakes = 0; G.hintsLeft = 3; G.hintsUsed = 0; G.collected = 0;
-      G.animating = false; G.active = true; G.startedAt = Date.now();
+      G.animating = false; G.active = true; G.startedAt = Date.now(); G.focusId = -1;
       renderGameHead(); buildBoard(); updateProgress(); updateHintBtn();
       showScreen("game");
       $("#game-tip").textContent = mode === "daily"
@@ -811,6 +834,7 @@
     function buildBoard(){
       const { W, H } = G.cfg;
       board.setAttribute("viewBox", (-MARGIN) + " " + (-MARGIN) + " " + (W*CELL + MARGIN*2) + " " + (H*CELL + MARGIN*2));
+      board.style.setProperty("--ar", ((W*CELL + MARGIN*2) / (H*CELL + MARGIN*2)).toFixed(4));
       board.innerHTML = "";
       const grid = document.createElementNS(NS,"g");
       grid.setAttribute("class","gridlines");
@@ -841,7 +865,14 @@
           (bx + uy*23) + "," + (by + ux*23) + " " +
           (bx - uy*23) + "," + (by - ux*23));
         g.appendChild(hit); g.appendChild(shaft); g.appendChild(poly);
+        g.setAttribute("tabindex", "0");
+        g.setAttribute("role", "button");
+        g.setAttribute("aria-label", "Arrow pointing " + (a.dir.y < 0 ? "up" : a.dir.y > 0 ? "down" : a.dir.x < 0 ? "left" : "right"));
         g.addEventListener("click", () => tapArrow(a));
+        g.addEventListener("focus", () => { G.focusId = a.id; });
+        g.addEventListener("keydown", (ev) => {
+          if(ev.key === "Enter" || ev.key === " "){ ev.preventDefault(); tapArrow(a); }
+        });
         board.appendChild(g);
         G.arrowEls.set(i, g);
       });
@@ -1101,11 +1132,13 @@
       animateSlither(el, a, () => {
         a.cleared = true;
         a.cells.forEach(c => G.occupied.delete(key(c.x, c.y)));
+        const hadFocus = document.activeElement === el || G.focusId === a.id;
         el.remove();
         G.collected++; S.stats.arrowsCollected++; S.leaguePoints++;
         updateProgress(); saveGame();
         G.animating = false;
         if(G.arrows.every(x => x.cleared)) setTimeout(winGame, 220);
+        else if(hadFocus) focusNearestArrow(a);
       });
     }
     function useHint(){
@@ -1122,8 +1155,63 @@
         setTimeout(() => el.classList.remove("hintflash"), 2900);
       }
     }
-    /* input: each arrow handles its own tap (see buildBoard) —
-       no dragging, no dot, no keys */
+    /* input: tap or click an arrow to clear it (see buildBoard).
+       On a keyboard, Tab reaches the board, the arrow keys move
+       between arrows, Enter / Space clears the focused arrow,
+       and H / R / G / Esc drive hint, restart, grid and back. */
+    function arrowCenter(a){
+      let x = 0, y = 0;
+      a.cells.forEach(c => { x += c.x; y += c.y; });
+      return { x: x / a.cells.length, y: y / a.cells.length };
+    }
+    function focusNearestArrow(from){
+      const fc = arrowCenter(from);
+      let best = null, bestScore = Infinity;
+      G.arrows.forEach(b => {
+        if(b.cleared || b === from) return;
+        const bc = arrowCenter(b);
+        const score = Math.hypot(bc.x - fc.x, bc.y - fc.y);
+        if(score < bestScore){ bestScore = score; best = b; }
+      });
+      if(best){ const el = G.arrowEls.get(best.id); if(el) el.focus(); }
+    }
+    board.addEventListener("keydown", (ev) => {
+      const D = { ArrowUp:{x:0,y:-1}, ArrowDown:{x:0,y:1}, ArrowLeft:{x:-1,y:0}, ArrowRight:{x:1,y:0} }[ev.key];
+      if(!D) return;
+      ev.preventDefault();
+      const remaining = G.arrows.filter(b => !b.cleared);
+      if(!remaining.length) return;
+      let cur = remaining.find(b => G.arrowEls.get(b.id) === document.activeElement)
+             || remaining.find(b => b.id === G.focusId) || remaining[0];
+      const cc = arrowCenter(cur);
+      let best = null, bestScore = Infinity;
+      remaining.forEach(b => {
+        if(b === cur) return;
+        const bc = arrowCenter(b);
+        const dx = bc.x - cc.x, dy = bc.y - cc.y;
+        const along = dx * D.x + dy * D.y;
+        if(along <= 0.01) return;
+        const score = along + Math.abs(dx * D.y - dy * D.x) * 2.2;
+        if(score < bestScore){ bestScore = score; best = b; }
+      });
+      const el = G.arrowEls.get((best || cur).id);
+      if(el) el.focus();
+    });
+    document.addEventListener("keydown", (ev) => {
+      const tag = ev.target && ev.target.tagName;
+      if(tag === "INPUT" || tag === "TEXTAREA") return;
+      if(ev.key === "Escape"){
+        if($("#overlay2").classList.contains("on")) $("#overlay2").classList.remove("on");
+        else if(S.screen === "game" && !$("#overlay").classList.contains("on")){ G.active = false; goHome(); }
+        return;
+      }
+      if(S.screen !== "game" || !G.active) return;
+      if($("#overlay").classList.contains("on") || $("#overlay2").classList.contains("on")) return;
+      const k = ev.key.toLowerCase();
+      if(k === "h") useHint();
+      else if(k === "r") startGame(G.mode, G.day);
+      else if(k === "g") $("#btn-grid").click();
+    });
 
     function elapsedStr(){
       const sec = Math.max(1, Math.round((Date.now()-G.startedAt)/1000));
